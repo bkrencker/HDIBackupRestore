@@ -17,7 +17,7 @@
   },
   "scripts": {
     "start": "cds-serve",
-    "watch-backup": "cds watch --open backup/webapp/index.html?sap-ui-xx-viewCache=false"
+    "watch-backup": "start chrome  http://localhost:4004/backup/webapp/index.html?sap-ui-xx-viewCache=false && cds watch"
   },
   "sapux": [
     "app/backup"
