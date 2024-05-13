@@ -43,14 +43,15 @@
     }
   },
   "sap.ui5": {
-    "flexEnabled": true,
+    "flexEnabled": false,
     "dependencies": {
       "minUI5Version": "1.123.2",
       "libs": {
         "sap.m": {},
         "sap.ui.core": {},
         "sap.ushell": {},
-        "sap.fe.templates": {}
+        "sap.fe.templates": {},
+        "sap.f": {}
       }
     },
     "contentDensities": {
@@ -83,22 +84,51 @@
       "css": []
     },
     "routing": {
-      "config": {},
+      "config": {
+        "flexibleColumnLayout": {
+          "defaultTwoColumnLayoutType": "TwoColumnsBeginExpanded",
+          "defaultThreeColumnLayoutType": "ThreeColumnsEndExpanded"
+        },
+        "routerClass": "sap.f.routing.Router"
+      },
       "routes": [
         {
           "pattern": ":?query:",
           "name": "ApplicationsList",
-          "target": "ApplicationsList"
+          "target": [
+            "ApplicationsList"
+          ]
         },
         {
           "pattern": "Applications({key}):?query:",
           "name": "ApplicationsObjectPage",
-          "target": "ApplicationsObjectPage"
+          "target": [
+            "ApplicationsList",
+            "ApplicationsObjectPage"
+          ]
         },
         {
           "pattern": "Applications({key})/hdiContainers({key2}):?query:",
           "name": "HDIContainersObjectPage",
-          "target": "HDIContainersObjectPage"
+          "target": [
+            "ApplicationsList",
+            "ApplicationsObjectPage",
+            "HDIContainersObjectPage"
+          ]
+        },
+        {
+          "pattern": "Applications({key})/hdiContainers({key2})/backups({key3}):?query:",
+          "name": "Applications_hdiContainers_backupsObjectPage",
+          "target": [
+            "Applications_hdiContainers_backupsObjectPage"
+          ]
+        },
+        {
+          "pattern": "Applications({key})/hdiContainers({key2})/backups({key3})/imports({key4}):?query:",
+          "name": "Applications_hdiContainers_backups_importsObjectPage",
+          "target": [
+            "Applications_hdiContainers_backups_importsObjectPage"
+          ]
         }
       ],
       "targets": {
@@ -109,7 +139,7 @@
           "options": {
             "settings": {
               "contextPath": "/Applications",
-              "variantManagement": "Page",
+              "variantManagement": "None",
               "navigation": {
                 "Applications": {
                   "detail": {
@@ -120,12 +150,19 @@
               "controlConfiguration": {
                 "@com.sap.vocabularies.UI.v1.LineItem": {
                   "tableSettings": {
-                    "type": "ResponsiveTable"
+                    "type": "ResponsiveTable",
+                    "quickVariantSelection": {
+                      "showCounts": true
+                    }
                   }
                 }
-              }
+              },
+              "hideFilterBar": false,
+              "initialLoad": "Enabled"
             }
-          }
+          },
+          "controlAggregation": "beginColumnPages",
+          "contextPattern": ""
         },
         "ApplicationsObjectPage": {
           "type": "Component",
@@ -141,9 +178,20 @@
                     "route": "HDIContainersObjectPage"
                   }
                 }
+              },
+              "controlConfiguration": {
+                "hdiContainers/@com.sap.vocabularies.UI.v1.LineItem#HDIContainers": {
+                  "actions": {
+                    "DataFieldForAction::CatalogService.createBackup": {
+                      "enableOnSelect": "single"
+                    }
+                  }
+                }
               }
             }
-          }
+          },
+          "controlAggregation": "midColumnPages",
+          "contextPattern": "/Applications({key})"
         },
         "HDIContainersObjectPage": {
           "type": "Component",
@@ -152,11 +200,58 @@
           "options": {
             "settings": {
               "editableHeaderContent": false,
-              "contextPath": "/Applications/hdiContainers"
+              "contextPath": "/Applications/hdiContainers",
+              "navigation": {
+                "backups": {
+                  "detail": {
+                    "route": "Applications_hdiContainers_backupsObjectPage"
+                  }
+                }
+              }
             }
-          }
+          },
+          "controlAggregation": "endColumnPages",
+          "contextPattern": "/Applications({key})/hdiContainers({key2})"
+        },
+        "Applications_hdiContainers_backupsObjectPage": {
+          "type": "Component",
+          "id": "Applications_hdiContainers_backupsObjectPage",
+          "name": "sap.fe.templates.ObjectPage",
+          "options": {
+            "settings": {
+              "contextPath": "/Applications/hdiContainers/backups",
+              "navigation": {
+                "imports": {
+                  "detail": {
+                    "route": "Applications_hdiContainers_backups_importsObjectPage"
+                  }
+                }
+              }
+            }
+          },
+          "controlAggregation": "endColumnPages",
+          "contextPattern": "/Applications({key})/hdiContainers({key2})/backups({key3})"
+        },
+        "Applications_hdiContainers_backups_importsObjectPage": {
+          "type": "Component",
+          "id": "Applications_hdiContainers_backups_importsObjectPage",
+          "name": "sap.fe.templates.ObjectPage",
+          "options": {
+            "settings": {
+              "contextPath": "/Applications/hdiContainers/backups/imports",
+              "navigation": {}
+            }
+          },
+          "controlAggregation": "endColumnPages",
+          "contextPattern": "/Applications({key})/hdiContainers({key2})/backups({key3})/imports({key4})"
         }
       }
+    },
+    "rootView": {
+      "viewName": "sap.fe.templates.RootContainer.view.Fcl",
+      "type": "XML",
+      "async": true,
+      "id": "appRootView"
     }
   },
   "sap.fiori": {
