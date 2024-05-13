@@ -16,6 +16,10 @@
     "eslint": "^9"
   },
   "scripts": {
-    "start": "cds-serve"
-  }
+    "start": "cds-serve",
+    "watch-backup": "cds watch --open backup/webapp/index.html?sap-ui-xx-viewCache=false"
+  },
+  "sapux": [
+    "app/backup"
+  ]
 }
