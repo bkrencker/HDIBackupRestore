@@ -6,7 +6,9 @@
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.574.0",
     "@sap/cds": "^7",
+    "@sap/hana-client": "^2.20.20",
     "express": "^4"
   },
   "devDependencies": {
