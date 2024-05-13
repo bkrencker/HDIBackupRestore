@@ -1,7 +1,12 @@
 using CatalogService as service from '../../srv/cat-service';
 using from '../../db/schema';
 
+// Child Compositions inherit DRAFT enablement
 annotate service.Applications with @odata.draft.enabled;
+
+// Disable DRAFT on Data that is created by ACTIONs on CAP Backend
+annotate service.Backups with @odata.draft.enabled: false;
+annotate service.Imports with @odata.draft.enabled: false;
 
 annotate service.Applications with @(
     UI.LineItem : [
