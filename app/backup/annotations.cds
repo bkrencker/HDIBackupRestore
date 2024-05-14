@@ -142,6 +142,12 @@ annotate service.Backups with @(
         },
         {
             $Type : 'UI.ReferenceFacet',
+            Label : 'Logs',
+            ID : 'Logs',
+            Target : '@UI.FieldGroup#Logs',
+        },
+        {
+            $Type : 'UI.ReferenceFacet',
             Label : 'Restores',
             ID : 'Restores',
             Target : 'imports/@UI.LineItem#Restores',
@@ -203,3 +209,17 @@ annotate service.Backups with @(
             Value : createdBy,
         },]
 );
+annotate service.Backups with @(
+    UI.FieldGroup #Logs : {
+        $Type : 'UI.FieldGroupType',
+        Data : [
+            {
+                $Type : 'UI.DataField',
+                Value : exportLogs,
+                Label : 'Backup Log',
+            },],
+    }
+);
+annotate service.Backups with {
+    exportLogs @UI.MultiLineText : true
+};
