@@ -166,11 +166,6 @@ annotate service.Backups with @(
                 $Type : 'UI.DataField',
                 Value : path,
                 Label : 'path',
-            },
-            {
-                $Type : 'UI.DataFieldForAction',
-                Action : 'CatalogService.restoreBackup',
-                Label : 'restoreBackup',
             },],
     }
 );
@@ -225,3 +220,12 @@ annotate service.Imports with @(
     UI.DeleteHidden : true
 );
 
+annotate service.Backups with @(
+    UI.Identification : [
+        {
+            $Type : 'UI.DataFieldForAction',
+            Action : 'CatalogService.restoreBackup',
+            Label : 'Restore Backup',
+        },
+    ]
+);

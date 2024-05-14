@@ -19,6 +19,13 @@ service CatalogService {
 
   entity Backups as projection on my.Backups actions {
     @Core.OperationAvailable: in.IsActiveEntity // Path is correct
+    // Refresh UI after action is performed
+    @Common.SideEffects : {
+        $Type : 'Common.SideEffectsType',
+        TargetEntities : [
+            in.imports
+        ],
+    }
     action restoreBackup();
   };
 }
