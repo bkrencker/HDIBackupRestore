@@ -12,6 +12,12 @@ File or Folder | Purpose
 `package.json` | project metadata and configuration
 `readme.md` | this getting started guide
 
+## Environment Variables
+
+When running locally create .env File with following variables to connect with BACKUP User to the Hana DB Instance
+cds.requires.hanadb.credentials.host=<Hana DB Connection String>
+cds.requires.hanadb.credentials.user=<Hana DB Username>
+cds.requires.hanadb.credentials.pw=<Hana DB Password>
 
 ## Next Steps
 
