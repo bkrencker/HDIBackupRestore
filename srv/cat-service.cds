@@ -7,6 +7,13 @@ service CatalogService {
 
   entity HDIContainers as projection on my.HDIContainers actions {
     @Core.OperationAvailable: in.IsActiveEntity // Path is correct
+    // Refresh UI after action is performed
+    @Common.SideEffects : {
+        $Type : 'Common.SideEffectsType',
+        TargetEntities : [
+            in.backups
+        ],
+    }
     action createBackup();
   };
 
