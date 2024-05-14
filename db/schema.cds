@@ -2,7 +2,7 @@ using { managed, cuid } from '@sap/cds/common';
 namespace my;
 
 entity Applications: cuid, managed {
-  name          : String @title : '' @mandatory;
+  name          : String @mandatory;
 
   hdiContainers : Composition of many HDIContainers on hdiContainers.application = $self;
 }
@@ -17,9 +17,8 @@ entity HDIContainers: cuid, managed {
 
 entity Backups: cuid, managed {
   created      : DateTime;
-  path         : String;
-
-  exportLogs   : String;
+  path         : String @Core.Immutable;
+  exportLogs   : String @Core.Immutable;
 
   hdiContainer : Association to one HDIContainers;
   imports      : Composition of many Imports on imports.backup = $self;
