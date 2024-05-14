@@ -8,7 +8,7 @@ entity Applications: cuid, managed {
 }
 
 entity HDIContainers: cuid, managed {
-  containerId  : String @mandatory @assert.format : '[0-9A-Z]{32}';
+  containerId  : String @mandatory @assert.format : '[0-9A-Z]{32}' @Core.Immutable;
   description  : String @mandatory;
 
   application  : Association to one Applications;

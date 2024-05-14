@@ -169,11 +169,6 @@ annotate service.Backups with @(
             },
             {
                 $Type : 'UI.DataFieldForAction',
-                Action : 'CatalogService.deleteBackup',
-                Label : 'deleteBackup',
-            },
-            {
-                $Type : 'UI.DataFieldForAction',
                 Action : 'CatalogService.restoreBackup',
                 Label : 'restoreBackup',
             },],
@@ -192,10 +187,6 @@ annotate service.Imports with @(
 annotate service.Backups with @(
     UI.LineItem #Backups : [
         {
-            $Type : 'UI.DataFieldForAction',
-            Action : 'CatalogService.deleteBackup',
-            Label : 'Delete Backup',
-        },{
             $Type : 'UI.DataFieldForAction',
             Action : 'CatalogService.restoreBackup',
             Label : 'Restore Backup',
@@ -223,3 +214,14 @@ annotate service.Backups with @(
 annotate service.Backups with {
     exportLogs @UI.MultiLineText : true
 };
+annotate service.Backups with @(
+    UI.UpdateHidden : true,
+    UI.CreateHidden : true
+);
+annotate service.Imports with @(
+    UI.UpdateHidden : true
+);
+annotate service.Imports with @(
+    UI.DeleteHidden : true
+);
+
