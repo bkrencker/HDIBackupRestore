@@ -2,13 +2,13 @@ using { managed, cuid } from '@sap/cds/common';
 namespace my;
 
 entity Applications: cuid, managed {
-  name          : String @mandatory;
+  name          : String @title : '' @mandatory;
 
   hdiContainers : Composition of many HDIContainers on hdiContainers.application = $self;
 }
 
 entity HDIContainers: cuid, managed {
-  containerId  : String @mandatory;
+  containerId  : String @mandatory @assert.format : '[0-9A-Z]{32}';
   description  : String @mandatory;
 
   application  : Association to one Applications;

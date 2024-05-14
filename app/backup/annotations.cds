@@ -86,6 +86,11 @@ annotate service.HDIContainers with @(
                 $Type : 'UI.DataField',
                 Value : description,
                 Label : 'description',
+            },
+            {
+                $Type : 'UI.DataField',
+                Value : containerId,
+                Label : 'Container GUID',
             },],
     }
 );
@@ -100,6 +105,11 @@ annotate service.HDIContainers with @(
             $Type : 'UI.DataFieldForAction',
             Action : 'CatalogService.createBackup',
             Label : 'Create Backup',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : containerId,
+            Label : 'Container GUID',
         },]
 );
 annotate service.HDIContainers with @(
