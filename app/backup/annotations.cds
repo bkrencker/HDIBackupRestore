@@ -5,8 +5,8 @@ using from '../../db/schema';
 annotate service.Applications with @odata.draft.enabled;
 
 // Disable DRAFT on Data that is created by ACTIONs on CAP Backend
-annotate service.Backups with @odata.draft.enabled: false;
-annotate service.Imports with @odata.draft.enabled: false;
+//annotate service.Backups with @odata.draft.enabled: false;
+//annotate service.Imports with @odata.draft.enabled: false;
 
 annotate service.Applications with @(
     UI.LineItem : [

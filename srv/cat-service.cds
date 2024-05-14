@@ -19,9 +19,6 @@ service CatalogService {
 
   entity Backups as projection on my.Backups actions {
     @Core.OperationAvailable: in.IsActiveEntity // Path is correct
-    action deleteBackup();
-
-    @Core.OperationAvailable: in.IsActiveEntity // Path is correct
     action restoreBackup();
   };
 }
