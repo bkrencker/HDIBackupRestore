@@ -18,6 +18,8 @@ modules:
       buildpack: nodejs_buildpack
       readiness-health-check-type: http
       readiness-health-check-http-endpoint: /health
+      disk-quota: 256M
+      memory: 80M
     build-parameters:
       builder: npm
       ignore:
@@ -44,7 +46,7 @@ modules:
     parameters:
       keep-existing-routes: true
       disk-quota: 256M
-      memory: 256M
+      memory: 80M
     build-parameters:
       ignore:
         - "node_modules/"
