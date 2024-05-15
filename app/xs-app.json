@@ -1,14 +1,9 @@
 {
-  "welcomeFile": "app/index.html",
+  "welcomeFile": "app/backup/webapp/index.html",
   "routes": [
     {
       "source": "^/app/(.*)$",
       "target": "$1",
-      "localDir": ".",
-      "cacheControl": "no-cache, no-store, must-revalidate"
-    },
-    {
-      "source": "^/appconfig/",
       "localDir": ".",
       "cacheControl": "no-cache, no-store, must-revalidate"
     },
