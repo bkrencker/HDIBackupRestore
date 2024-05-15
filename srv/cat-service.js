@@ -99,7 +99,7 @@ class CatalogService extends cds.ApplicationService {
         created: createdTimestamp,
         hdiContainer_ID: hdiContainer.ID,
         path: awsS3FolderPath,
-        IsActiveEntity: true,
+        //IsActiveEntity: true,
         exportLogs: JSON.stringify(exportResult)
       };
 
@@ -152,7 +152,7 @@ class CatalogService extends cds.ApplicationService {
       let newImportEntry = {
         ID: uuid(),
         backup_ID: backup.ID,
-        IsActiveEntity: true,
+        //IsActiveEntity: true,
         importLogs: JSON.stringify(importResult)
       };
 
