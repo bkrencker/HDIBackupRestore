@@ -18,7 +18,7 @@ modules:
       buildpack: nodejs_buildpack
       readiness-health-check-type: http
       readiness-health-check-http-endpoint: /health
-      disk-quota: 256M
+      disk-quota: 1024M
       memory: 80M
     build-parameters:
       builder: npm
@@ -31,6 +31,7 @@ modules:
     requires:
       - name: HDI-Backup-db
       - name: HDI-Backup-auth
+      - name: objectstore
 
   - name: HDI-Backup-db-deployer
     type: hdb
