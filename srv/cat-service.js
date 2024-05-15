@@ -41,14 +41,10 @@ class CatalogService extends cds.ApplicationService {
       /**
        * Check access to S3 Bucket
        */
-      console.log('S3 Credentials', s3Credentials);
-
       const resp = await s3.send(new HeadBucketCommand({
         "Bucket": s3Credentials.bucket
       }));
-
       console.log('S3 Bucket', resp);
-
 
       console.log('Create Backup Action');
       console.log('req.data', JSON.stringify(req.data));
