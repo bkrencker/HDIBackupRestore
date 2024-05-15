@@ -26,6 +26,7 @@ modules:
           srv-url: ${default-url}
     requires:
       - name: HDI-Backup-db
+      - name: HDI-Backup-auth
 
   - name: HDI-Backup-db-deployer
     type: hdb
@@ -34,6 +35,22 @@ modules:
       buildpack: nodejs_buildpack
     requires:
       - name: HDI-Backup-db
+
+  - name: HDI-Backup
+    type: approuter.nodejs
+    path: app\router
+    parameters:
+      keep-existing-routes: true
+      disk-quota: 256M
+      memory: 256M
+    requires:
+      - name: srv-api
+        group: destinations
+        properties:
+          name: srv-api # must be used in xs-app.json as well
+          url: ~{srv-url}
+          forwardAuthToken: true
+      - name: HDI-Backup-auth
 
 resources:
   - name: HDI-Backup-db
@@ -48,3 +65,12 @@ resources:
       service: objectstore
       service-plan: standard
       service-name: objectstore
+  - name: HDI-Backup-auth
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: xsuaa
+      service-plan: application
+      path: ./xs-security.json
+      config:
+        xsappname: HDI-Backup-${org}-${space}
+        tenant-mode: dedicated

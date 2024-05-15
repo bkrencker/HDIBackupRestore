@@ -9,7 +9,8 @@
     "@aws-sdk/client-s3": "^3.574.0",
     "@sap/cds": "^7",
     "@sap/hana-client": "^2.20.20",
-    "express": "^4"
+    "express": "^4",
+    "@sap/xssec": "^3"
   },
   "devDependencies": {
     "@cap-js/sqlite": "^1",
@@ -25,5 +26,10 @@
   },
   "sapux": [
     "app/backup"
-  ]
+  ],
+  "cds": {
+    "requires": {
+      "auth": "xsuaa"
+    }
+  }
 }
