@@ -41,3 +41,10 @@ resources:
     parameters:
       service: hana
       service-plan: hdi-shared
+
+  - name: objectstore
+    type: objectstore
+    parameters:
+      service: objectstore
+      service-plan: standard
+      service-name: objectstore
