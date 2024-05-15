@@ -42,14 +42,14 @@ class CatalogService extends cds.ApplicationService {
        * Check access to S3 Bucket
        */
       console.log('S3 Credentials', s3Credentials);
-      
+
       const resp = await s3.send(new HeadBucketCommand({
         "Bucket": s3Credentials.bucket
       }));
 
       console.log('S3 Bucket', resp);
 
-      
+
       console.log('Create Backup Action');
       console.log('req.data', JSON.stringify(req.data));
       console.log('req.params', JSON.stringify(req.params));
@@ -85,6 +85,19 @@ class CatalogService extends cds.ApplicationService {
 
       console.log('Result:', JSON.stringify(exportResult));
 
+      const errorMessages = exportResult
+        .filter(item => item.SEVERITY === 'ERROR')
+        .map(item => item.MESSAGE);
+
+      if (errorMessages.length > 0) {
+        console.log('Error messages found', errorMessages);
+        return req.error({
+          code: 'EXPORT_ERROR',
+          message: `Export of HDI Container failed: \n${ errorMessages.toString() }`,
+          status: 418
+        });
+      }
+
       let newBackupEntry = {
         ID: uuid(),
         created: createdTimestamp,
@@ -117,8 +130,7 @@ class CatalogService extends cds.ApplicationService {
 
       const conn = await _getHanaConnection();
 
-      const awsS3 = cds.requires.awss3.credentials;
-      const awsS3SourcePath = `s3-${s3Credentials.region}://${s3Credentials.access_key_id}:${s3Credentials.secret_access_key}@${s3Credentials.bucket}/${backup.path}`;
+      const awsS3SourcePath = `as3-${s3Credentials.region}://${s3Credentials.access_key_id}:${s3Credentials.secret_access_key}@${s3Credentials.bucket}/${backup.path}`;
 
       await conn.exec('CREATE LOCAL TEMPORARY COLUMN TABLE #PARAMETERS LIKE _SYS_DI.TT_PARAMETERS;');
       await conn.exec(`INSERT INTO #PARAMETERS (KEY, VALUE) VALUES ('source_path', '${awsS3SourcePath}');`);
@@ -127,6 +139,19 @@ class CatalogService extends cds.ApplicationService {
       await conn.exec(`DROP TABLE #PARAMETERS;`);
 
       console.log('Result:', JSON.stringify(importResult));
+
+      const errorMessages = importResult
+      .filter(item => item.SEVERITY === 'ERROR')
+      .map(item => item.MESSAGE);
+
+    if (errorMessages.length > 0) {
+      console.log('Error messages found', errorMessages);
+      return req.error({
+        code: 'EXPORT_ERROR',
+        message: `Restore of HDI Container failed: \n${ errorMessages.toString() }`,
+        status: 418
+      });
+    }
 
       let newImportEntry = {
         ID: uuid(),
