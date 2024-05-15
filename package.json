@@ -19,7 +19,8 @@
   },
   "scripts": {
     "start": "cds-serve",
-    "watch-backup": "start chrome  http://localhost:4004/backup/webapp/index.html?sap-ui-xx-viewCache=false && cds watch"
+    "watch-backup": "start chrome  http://localhost:4004/backup/webapp/index.html?sap-ui-xx-viewCache=false && cds watch --profile hybrid",
+    "bindObjectstore": "cds bind --to objectstore"
   },
   "sapux": [
     "app/backup"
