@@ -22,7 +22,10 @@
   "scripts": {
     "start": "cds-serve",
     "watch-backup": "start chrome  http://localhost:4004/backup/webapp/index.html?sap-ui-xx-viewCache=false && cds watch --profile hybrid",
-    "bindObjectstore": "cds bind --to objectstore"
+    "bindObjectstore": "cds bind --to objectstore",
+    "build": "mbt build -p=cf",
+    "deploy": "cf deploy mta_archives\\HDI-Backup_1.0.0.mtar",
+    "buildDeployCloud": "npm run build && npm run deploy"
   },
   "sapux": [
     "app/backup"
