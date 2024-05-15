@@ -20,6 +20,10 @@ modules:
       readiness-health-check-http-endpoint: /health
       disk-quota: 1024M
       memory: 80M
+    properties:
+      cds_requires_hanadb_credentials_host: ""
+      cds_requires_hanadb_credentials_user: ""
+      cds_requires_hanadb_credentials_pw: ""
     build-parameters:
       builder: npm
       ignore:
