@@ -8,9 +8,10 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.574.0",
     "@sap/cds": "^7",
+    "@sap/cds-hana": "^2",
     "@sap/hana-client": "^2.20.20",
-    "express": "^4",
-    "@sap/xssec": "^3"
+    "@sap/xssec": "^3",
+    "express": "^4"
   },
   "devDependencies": {
     "@cap-js/sqlite": "^1",
@@ -32,7 +33,10 @@
   ],
   "cds": {
     "requires": {
-      "auth": "xsuaa"
+      "[production]": {
+        "db": "hana",
+        "auth": "xsuaa"
+      }
     }
   }
 }
