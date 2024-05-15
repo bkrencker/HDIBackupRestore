@@ -75,7 +75,7 @@ class CatalogService extends cds.ApplicationService {
       const awsS3 = cds.requires.awss3.credentials;
       const applicationString = hdiContainer.application?.name?.length > 0 ? hdiContainer.application.name : hdiContainer.application_ID;
       const awsS3FolderPath = `${applicationString}/${hdiContainer.containerId}/${createdTimestamp.toISOString()}`;
-      const awsS3TargetPath = `${awsS3.region}://${awsS3.access_key}:${awsS3.secret_key}@${awsS3.bucket_name}/${awsS3FolderPath}`;
+      const awsS3TargetPath = `${s3Credentials.region}://${s3Credentials.access_key_id}:${s3Credentials.secret_access_key}@${s3Credentials.bucket}/${awsS3FolderPath}`;
 
       console.log('Store Backup on S3 Path', awsS3FolderPath);
 
@@ -119,7 +119,7 @@ class CatalogService extends cds.ApplicationService {
       const conn = await _getHanaConnection();
 
       const awsS3 = cds.requires.awss3.credentials;
-      const awsS3SourcePath = `${awsS3.region}://${awsS3.access_key}:${awsS3.secret_key}@${awsS3.bucket_name}/${backup.path}`;
+      const awsS3SourcePath = `${s3Credentials.region}://${s3Credentials.access_key_id}:${s3Credentials.secret_access_key}@${s3Credentials.bucket}/${backup.path}`;
 
       await conn.exec('CREATE LOCAL TEMPORARY COLUMN TABLE #PARAMETERS LIKE _SYS_DI.TT_PARAMETERS;');
       await conn.exec(`INSERT INTO #PARAMETERS (KEY, VALUE) VALUES ('source_path', '${awsS3SourcePath}');`);
