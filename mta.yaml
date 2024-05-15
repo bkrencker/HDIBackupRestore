@@ -20,6 +20,8 @@ modules:
       readiness-health-check-http-endpoint: /health
     build-parameters:
       builder: npm
+      ignore:
+        - "node_modules/"
     provides:
       - name: srv-api # required by consumers of CAP services (e.g. approuter)
         properties:
@@ -43,6 +45,9 @@ modules:
       keep-existing-routes: true
       disk-quota: 256M
       memory: 256M
+    build-parameters:
+      ignore:
+        - "node_modules/"
     requires:
       - name: srv-api
         group: destinations
@@ -65,6 +70,7 @@ resources:
       service: objectstore
       service-plan: standard
       service-name: objectstore
+
   - name: HDI-Backup-auth
     type: org.cloudfoundry.managed-service
     parameters:
