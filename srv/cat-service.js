@@ -130,7 +130,7 @@ class CatalogService extends cds.ApplicationService {
 
       const conn = await _getHanaConnection();
 
-      const awsS3SourcePath = `as3-${s3Credentials.region}://${s3Credentials.access_key_id}:${s3Credentials.secret_access_key}@${s3Credentials.bucket}/${backup.path}`;
+      const awsS3SourcePath = `s3-${s3Credentials.region}://${s3Credentials.access_key_id}:${s3Credentials.secret_access_key}@${s3Credentials.bucket}/${backup.path}`;
 
       await conn.exec('CREATE LOCAL TEMPORARY COLUMN TABLE #PARAMETERS LIKE _SYS_DI.TT_PARAMETERS;');
       await conn.exec(`INSERT INTO #PARAMETERS (KEY, VALUE) VALUES ('source_path', '${awsS3SourcePath}');`);

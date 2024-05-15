@@ -158,14 +158,16 @@ annotate service.Backups with @(
         Data : [
             {
                 $Type : 'UI.DataField',
-                Value : createdAt,
-            },{
-                $Type : 'UI.DataField',
                 Value : createdBy,
+            },
+            {
+                $Type : 'UI.DataField',
+                Value : created,
+                Label : 'Created Timestamp',
             },{
                 $Type : 'UI.DataField',
                 Value : path,
-                Label : 'path',
+                Label : 'S3 Path (Key)',
             },],
     }
 );
@@ -188,7 +190,8 @@ annotate service.Backups with @(
         },
         {
             $Type : 'UI.DataField',
-            Value : createdAt,
+            Value : created,
+            Label : 'Created',
         },
         {
             $Type : 'UI.DataField',
