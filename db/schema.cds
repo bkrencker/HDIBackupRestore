@@ -17,7 +17,7 @@ entity HDIContainers: managed {
 }
 
 entity Backups: cuid, managed {
-  created       : DateTime;
+  created       : DateTime @Core.Immutable;
   path          : String @Core.Immutable;
   exportLogs    : String @Core.Immutable;
   numberOfFiles : Integer @title: 'Number of Files';
