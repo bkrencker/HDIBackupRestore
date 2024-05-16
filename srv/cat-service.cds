@@ -65,5 +65,16 @@ service CatalogService {
       ) containerId : String @title: 'HDI Container GUID',
       @readonly description: String @title: 'HDI Container Description'
     );
+
+    @(
+        Common.IsActionCritical: true,
+        Common.SideEffects : {
+          $Type : 'Common.SideEffectsType',
+          TargetEntities : [
+              in
+          ],
+      }
+    )
+    action deleteBackup();
   };
 }

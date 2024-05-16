@@ -13,7 +13,7 @@ const hana = require('@sap/hana-client');
  * https://community.sap.com/t5/technology-blogs-by-members/working-with-files-in-cap-and-amazon-s3/ba-p/13427432
  */
 const s3Credentials = JSON.parse(process.env.VCAP_SERVICES).objectstore[0].credentials;
-const { S3Client, GetObjectCommand, HeadBucketCommand, ListObjectsV2Command } = require("@aws-sdk/client-s3");
+const { S3Client, GetObjectCommand, HeadBucketCommand, ListObjectsV2Command, DeleteObjectCommand } = require("@aws-sdk/client-s3");
 const s3 = new S3Client({
   region: s3Credentials.region,
   credentials: {
@@ -89,7 +89,7 @@ class CatalogService extends cds.ApplicationService {
         console.log('Error messages found', errorMessages);
         return req.error({
           code: 'EXPORT_ERROR',
-          message: `Export of HDI Container failed: \n${ errorMessages.toString() }`,
+          message: `Export of HDI Container failed: \n${errorMessages.toString()}`,
           status: 418
         });
       }
@@ -104,12 +104,12 @@ class CatalogService extends cds.ApplicationService {
       }));
 
       const aFiles = resp1.Contents.map(item => item.Key);
-      console.log(`Backup containing ${ aFiles.length } Files that are created on S3 storage`);
+      console.log(`Backup containing ${aFiles.length} Files that are created on S3 storage`);
 
       if (aFiles.length < 30) {
         return req.error({
           code: 'EXPORT_ERROR',
-          message: `Export not found on S3 Storage, check Export Log: \n${ JSON.stringify(aExportResult) }`,
+          message: `Export not found on S3 Storage, check Export Log: \n${JSON.stringify(aExportResult)}`,
           status: 418
         });
       }
@@ -147,7 +147,7 @@ class CatalogService extends cds.ApplicationService {
       console.log('req.params', JSON.stringify(req.params));
 
       const { containerId, description } = req.data;
-      console.log(`Restore to target HDI Container ID ${ containerId } (${ description })`);
+      console.log(`Restore to target HDI Container ID ${containerId} (${description})`);
 
       const backup = await SELECT.one.from(req.subject, backup => {
         backup('*'),
@@ -195,14 +195,14 @@ class CatalogService extends cds.ApplicationService {
         .filter(item => item.SEVERITY === 'ERROR')
         .map(item => item.MESSAGE);
 
-    if (errorMessages.length > 0) {
-      console.log('Error messages found', errorMessages);
-      return req.error({
-        code: 'EXPORT_ERROR',
-        message: `Restore of HDI Container failed: \n${ errorMessages.toString() }`,
-        status: 418
-      });
-    }
+      if (errorMessages.length > 0) {
+        console.log('Error messages found', errorMessages);
+        return req.error({
+          code: 'EXPORT_ERROR',
+          message: `Restore of HDI Container failed: \n${errorMessages.toString()}`,
+          status: 418
+        });
+      }
 
       let newImportEntry = {
         ID: uuid(),
@@ -219,6 +219,32 @@ class CatalogService extends cds.ApplicationService {
     };
 
 
+    this.on('DELETE', Backups.drafts, async (req, next) => {
+      console.log("On DELETE Backups");
+
+      const backup = await SELECT.one.from(req.subject);
+      console.log('Backup to Delete', backup);
+
+      const { Contents } = await s3.send(new ListObjectsV2Command({ Bucket: s3Credentials.bucket, Prefix: backup.path }));
+
+      if (!Contents) {
+        // there are no files on S3, just delete the entity record in the DB
+        return next(); // call default event handler
+      }
+
+      const deletePromises = Contents.map(async (obj) => {
+        const deleteParams = {
+          Bucket: s3Credentials.bucket,
+          Key: obj.Key
+        };
+        await s3.send(new DeleteObjectCommand(deleteParams));
+      });
+
+      await Promise.all(deletePromises);
+
+      console.log('All objects in the folder deleted successfully');
+      return next(); // call default event handler
+    });
 
     return super.init();
   }
