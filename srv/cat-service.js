@@ -13,7 +13,7 @@ const hana = require('@sap/hana-client');
  * https://community.sap.com/t5/technology-blogs-by-members/working-with-files-in-cap-and-amazon-s3/ba-p/13427432
  */
 const s3Credentials = JSON.parse(process.env.VCAP_SERVICES).objectstore[0].credentials;
-const { S3Client, GetObjectAttributesCommand, GetObjectCommand, HeadBucketCommand, HeadObjectCommand } = require("@aws-sdk/client-s3");
+const { S3Client, GetObjectCommand, HeadBucketCommand, ListObjectsV2Command } = require("@aws-sdk/client-s3");
 const s3 = new S3Client({
   region: s3Credentials.region,
   credentials: {
@@ -90,6 +90,26 @@ class CatalogService extends cds.ApplicationService {
         return req.error({
           code: 'EXPORT_ERROR',
           message: `Export of HDI Container failed: \n${ errorMessages.toString() }`,
+          status: 418
+        });
+      }
+
+      /**
+       * Check if files are created on S3 storage
+       * Use arbitrary minimum number of 30 files
+       */
+      const resp1 = await s3.send(new ListObjectsV2Command({
+        "Bucket": s3Credentials.bucket,
+        "Prefix": awsS3FolderPath
+      }));
+
+      const keysArray = resp1.Contents.map(item => item.Key);
+      console.log(`Backup containing ${ keysArray.length } Files that are created on S3 storage`);
+
+      if (keysArray.length < 30) {
+        return req.error({
+          code: 'EXPORT_ERROR',
+          message: `Export not found on S3 Storage, check Export Log: \n${ JSON.stringify(aExportResult) }`,
           status: 418
         });
       }
