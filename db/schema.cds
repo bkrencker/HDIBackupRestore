@@ -16,12 +16,13 @@ entity HDIContainers: cuid, managed {
 }
 
 entity Backups: cuid, managed {
-  created      : DateTime;
-  path         : String @Core.Immutable;
-  exportLogs   : String @Core.Immutable;
+  created       : DateTime;
+  path          : String @Core.Immutable;
+  exportLogs    : String @Core.Immutable;
+  numberOfFiles : Integer @title: 'Number of Files';
 
-  hdiContainer : Association to one HDIContainers;
-  imports      : Composition of many Imports on imports.backup = $self;
+  hdiContainer  : Association to one HDIContainers;
+  imports       : Composition of many Imports on imports.backup = $self;
 }
 
 entity Imports: cuid, managed {

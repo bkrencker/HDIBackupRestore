@@ -168,6 +168,10 @@ annotate service.Backups with @(
                 $Type : 'UI.DataField',
                 Value : path,
                 Label : 'S3 Path (Key)',
+            },
+            {
+                $Type : 'UI.DataField',
+                Value : numberOfFiles,
             },],
     }
 );

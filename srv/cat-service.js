@@ -103,10 +103,10 @@ class CatalogService extends cds.ApplicationService {
         "Prefix": awsS3FolderPath
       }));
 
-      const keysArray = resp1.Contents.map(item => item.Key);
-      console.log(`Backup containing ${ keysArray.length } Files that are created on S3 storage`);
+      const aFiles = resp1.Contents.map(item => item.Key);
+      console.log(`Backup containing ${ aFiles.length } Files that are created on S3 storage`);
 
-      if (keysArray.length < 30) {
+      if (aFiles.length < 30) {
         return req.error({
           code: 'EXPORT_ERROR',
           message: `Export not found on S3 Storage, check Export Log: \n${ JSON.stringify(aExportResult) }`,
@@ -119,8 +119,8 @@ class CatalogService extends cds.ApplicationService {
         created: createdTimestamp,
         hdiContainer_ID: hdiContainer.ID,
         path: awsS3FolderPath,
-        //IsActiveEntity: true,
-        exportLogs: JSON.stringify(aExportResult)
+        exportLogs: JSON.stringify(aExportResult),
+        numberOfFiles: aFiles.length
       };
 
       console.log('Insert New Backup Entry', newBackupEntry);
@@ -177,7 +177,6 @@ class CatalogService extends cds.ApplicationService {
       let newImportEntry = {
         ID: uuid(),
         backup_ID: backup.ID,
-        //IsActiveEntity: true,
         importLogs: JSON.stringify(aNewImportLog)
       };
 
