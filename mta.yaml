@@ -63,6 +63,8 @@ modules:
           name: srv-api # must be used in xs-app.json as well
           url: ~{srv-url}
           forwardAuthToken: true
+          # Increase UI5 Frontend Timeout because Backup takes longer than 30s (default timeout)
+          timeout: 60000
       - name: HDI-Backup-auth
 
 resources:
