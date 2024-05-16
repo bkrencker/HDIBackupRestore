@@ -207,6 +207,13 @@
                     "route": "Applications_hdiContainers_backupsObjectPage"
                   }
                 }
+              },
+              "controlConfiguration": {
+                "backups/@com.sap.vocabularies.UI.v1.LineItem#Backups": {
+                  "tableSettings": {
+                    "selectionMode": "Single"
+                  }
+                }
               }
             }
           },
