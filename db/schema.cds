@@ -28,6 +28,7 @@ entity Backups: cuid, managed {
 }
 
 entity Imports: cuid, managed {
-  importLogs : String;
-  backup     : Association to one Backups;
+  importLogs      : String;
+  backup          : Association to one Backups;
+  targetContainer : Association to one HDIContainers;
 }

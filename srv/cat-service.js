@@ -218,7 +218,8 @@ class CatalogService extends cds.ApplicationService {
       let newImportEntry = {
         ID: uuid(),
         backup_ID: backup.ID,
-        importLogs: JSON.stringify(aNewImportLog)
+        importLogs: JSON.stringify(aNewImportLog),
+        targetContainer_containerId: targetContainer
       };
 
       console.log('Insert New Backup Entry', newImportEntry);

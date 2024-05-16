@@ -263,6 +263,12 @@ annotate service.Imports with @(
             ID : 'RestoreInformation',
             Target : '@UI.FieldGroup#RestoreInformation',
         },
+        {
+            $Type : 'UI.ReferenceFacet',
+            Label : 'Restored to HDI Container (Target Container)',
+            ID : 'RestoredtoHDIContainerTargetContainer',
+            Target : '@UI.FieldGroup#RestoredtoHDIContainerTargetContainer',
+        },
     ],
     UI.FieldGroup #RestoreInformation : {
         $Type : 'UI.FieldGroupType',
@@ -283,3 +289,21 @@ annotate service.Imports with @(
 annotate service.Imports with {
     importLogs @UI.MultiLineText : true
 };
+annotate service.Imports with @(
+    UI.FieldGroup #RestoredtoHDIContainerTargetContainer : {
+        $Type : 'UI.FieldGroupType',
+        Data : [
+            {
+                $Type : 'UI.DataField',
+                Value : targetContainer.containerId,
+            },{
+                $Type : 'UI.DataField',
+                Value : targetContainer.description,
+                Label : 'Description',
+            },{
+                $Type : 'UI.DataField',
+                Value : targetContainer.application.name,
+                Label : 'Application',
+            },],
+    }
+);
