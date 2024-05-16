@@ -117,7 +117,7 @@ class CatalogService extends cds.ApplicationService {
       let newBackupEntry = {
         ID: uuid(),
         created: createdTimestamp,
-        hdiContainer_ID: hdiContainer.ID,
+        hdiContainer_containerId: hdiContainer.containerId,
         path: awsS3FolderPath,
         exportLogs: JSON.stringify(aExportResult),
         numberOfFiles: aFiles.length
