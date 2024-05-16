@@ -21,6 +21,7 @@ entity Backups: cuid, managed {
   path          : String @Core.Immutable;
   exportLogs    : String @Core.Immutable;
   numberOfFiles : Integer @title: 'Number of Files';
+  sizeInMB      : Integer @title: 'Size in MB';
 
   hdiContainer  : Association to one HDIContainers;
   imports       : Composition of many Imports on imports.backup = $self;

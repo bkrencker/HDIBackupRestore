@@ -172,6 +172,10 @@ annotate service.Backups with @(
             {
                 $Type : 'UI.DataField',
                 Value : numberOfFiles,
+            },
+            {
+                $Type : 'UI.DataField',
+                Value : sizeInMB,
             },],
     }
 );
@@ -200,6 +204,16 @@ annotate service.Backups with @(
         {
             $Type : 'UI.DataField',
             Value : createdBy,
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : numberOfFiles,
+            Label : 'Files',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : sizeInMB,
+            Label : 'MB',
         },]
 );
 annotate service.Backups with @(

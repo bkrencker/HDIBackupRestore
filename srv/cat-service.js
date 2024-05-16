@@ -98,15 +98,12 @@ class CatalogService extends cds.ApplicationService {
        * Check if files are created on S3 storage
        * Use arbitrary minimum number of 30 files
        */
-      const resp1 = await s3.send(new ListObjectsV2Command({
+      const { Contents } = await s3.send(new ListObjectsV2Command({
         "Bucket": s3Credentials.bucket,
         "Prefix": awsS3FolderPath
       }));
 
-      const aFiles = resp1.Contents.map(item => item.Key);
-      console.log(`Backup containing ${aFiles.length} Files that are created on S3 storage`);
-
-      if (aFiles.length < 30) {
+      if (!Contents) {
         return req.error({
           code: 'EXPORT_ERROR',
           message: `Export not found on S3 Storage, check Export Log: \n${JSON.stringify(aExportResult)}`,
@@ -114,13 +111,30 @@ class CatalogService extends cds.ApplicationService {
         });
       }
 
+      let folderSize = 0;
+      let numberOfFiles = 0;
+
+      Contents.forEach(obj => {
+        folderSize += obj.Size;
+        numberOfFiles++;
+      });
+
+      console.log(`Backup containing ${numberOfFiles} Files that are created on S3 storage`);
+  
+      // Convert bytes to megabytes
+      const folderSizeInMB = folderSize / (1024 * 1024);
+      console.log(`Size of Backup is ${folderSizeInMB.toFixed(2)} MB`);
+
+      
+
       let newBackupEntry = {
         ID: uuid(),
         created: createdTimestamp,
         hdiContainer_containerId: hdiContainer.containerId,
         path: awsS3FolderPath,
         exportLogs: JSON.stringify(aExportResult),
-        numberOfFiles: aFiles.length
+        numberOfFiles: numberOfFiles,
+        sizeInMB : folderSizeInMB.toFixed(0)
       };
 
       console.log('Insert New Backup Entry', newBackupEntry);
