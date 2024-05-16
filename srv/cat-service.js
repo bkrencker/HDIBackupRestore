@@ -7,7 +7,6 @@ const { uuid } = cds.utils;
 
 const hana = require('@sap/hana-client');
 
-// 
 /**
  * https://github.com/cap-js/attachments/blob/main/lib/aws-s3.js
  * https://community.sap.com/t5/technology-blogs-by-members/working-with-files-in-cap-and-amazon-s3/ba-p/13427432
@@ -124,8 +123,6 @@ class CatalogService extends cds.ApplicationService {
       // Convert bytes to megabytes
       const folderSizeInMB = folderSize / (1024 * 1024);
       console.log(`Size of Backup is ${folderSizeInMB.toFixed(2)} MB`);
-
-      
 
       let newBackupEntry = {
         ID: uuid(),
