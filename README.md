@@ -19,11 +19,6 @@ cds.requires.hanadb.credentials.host=<Hana DB Connection String>
 cds.requires.hanadb.credentials.user=<Hana DB Username>
 cds.requires.hanadb.credentials.pw=<Hana DB Password>
 
-cds.requires.awss3.credentials.region=<AWS S3 Region>
-cds.requires.awss3.credentials.access_key=<AWS S3 Access Key>
-cds.requires.awss3.credentials.secret_key=<AWS S3 Secret Key>
-cds.requires.awss3.credentials.bucket_name=hcp-c126993b-687e-47e4-91ca-39960c5647e8
-
 ## Next Steps
 
 - Open a new terminal and run `cds watch`
