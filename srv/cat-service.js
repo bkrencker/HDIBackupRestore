@@ -76,12 +76,12 @@ class CatalogService extends cds.ApplicationService {
 
       await conn.exec('CREATE LOCAL TEMPORARY COLUMN TABLE #PARAMETERS LIKE _SYS_DI.TT_PARAMETERS;');
       await conn.exec(`INSERT INTO #PARAMETERS (KEY, VALUE) VALUES ('target_path', '${awsS3TargetPath}');`);
-      const exportResult = await conn.exec(`CALL _SYS_DI#BACKUP.EXPORT_CONTAINER_FOR_COPY('${hdiContainer.containerId}', '', '', #PARAMETERS, ?, ?, ?);`);
+      const aExportResult = await conn.exec(`CALL _SYS_DI#BACKUP.EXPORT_CONTAINER_FOR_COPY('${hdiContainer.containerId}', '', '', #PARAMETERS, ?, ?, ?);`);
       await conn.exec(`DROP TABLE #PARAMETERS;`);
 
-      console.log('Result:', JSON.stringify(exportResult));
+      console.log('Result:', aExportResult);
 
-      const errorMessages = exportResult
+      const errorMessages = aExportResult
         .filter(item => item.SEVERITY === 'ERROR')
         .map(item => item.MESSAGE);
 
@@ -100,7 +100,7 @@ class CatalogService extends cds.ApplicationService {
         hdiContainer_ID: hdiContainer.ID,
         path: awsS3FolderPath,
         //IsActiveEntity: true,
-        exportLogs: JSON.stringify(exportResult)
+        exportLogs: JSON.stringify(aExportResult)
       };
 
       console.log('Insert New Backup Entry', newBackupEntry);
@@ -131,14 +131,19 @@ class CatalogService extends cds.ApplicationService {
       await conn.exec('CREATE LOCAL TEMPORARY COLUMN TABLE #PARAMETERS LIKE _SYS_DI.TT_PARAMETERS;');
       await conn.exec(`INSERT INTO #PARAMETERS (KEY, VALUE) VALUES ('source_path', '${awsS3SourcePath}');`);
       await conn.exec(`INSERT INTO #PARAMETERS (KEY, VALUE) VALUES ('original_container_name', '${backup.hdiContainer.containerId}');`);
-      const importResult = await conn.exec(`CALL _SYS_DI#BACKUP.IMPORT_CONTAINER_FOR_COPY('${backup.hdiContainer.containerId}', '', '', #PARAMETERS, ?, ?, ?);`);
+      const aImportResult = await conn.exec(`CALL _SYS_DI#BACKUP.IMPORT_CONTAINER_FOR_COPY('${backup.hdiContainer.containerId}', '', '', #PARAMETERS, ?, ?, ?);`);
       await conn.exec(`DROP TABLE #PARAMETERS;`);
 
-      console.log('Result:', JSON.stringify(importResult));
+      // Filter the array to keep the first two entries and all entries with severity "ERROR"
+      let aNewImportLog = aImportResult.filter((entry, index) => {
+        return index < 2 || (entry.SEVERITY === 'ERROR');
+      });
 
-      const errorMessages = importResult
-      .filter(item => item.SEVERITY === 'ERROR')
-      .map(item => item.MESSAGE);
+      console.log('Result:', aNewImportLog);
+
+      const errorMessages = aNewImportLog
+        .filter(item => item.SEVERITY === 'ERROR')
+        .map(item => item.MESSAGE);
 
     if (errorMessages.length > 0) {
       console.log('Error messages found', errorMessages);
@@ -153,7 +158,7 @@ class CatalogService extends cds.ApplicationService {
         ID: uuid(),
         backup_ID: backup.ID,
         //IsActiveEntity: true,
-        importLogs: JSON.stringify(importResult)
+        importLogs: JSON.stringify(aNewImportLog)
       };
 
       console.log('Insert New Backup Entry', newImportEntry);
