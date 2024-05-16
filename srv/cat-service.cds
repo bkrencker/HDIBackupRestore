@@ -20,12 +20,50 @@ service CatalogService {
   entity Backups as projection on my.Backups actions {
     @Core.OperationAvailable: in.IsActiveEntity // Path is correct
     // Refresh UI after action is performed
-    @Common.SideEffects : {
-        $Type : 'Common.SideEffectsType',
-        TargetEntities : [
-            in.imports
-        ],
-    }
+    @(
+        Common.IsActionCritical: true,
+        Common.SideEffects : {
+          $Type : 'Common.SideEffectsType',
+          TargetEntities : [
+              in.imports
+          ],
+      }
+    )
     action restoreBackup();
+
+    @(
+        Common.IsActionCritical: true,
+        Common.SideEffects : {
+          $Type : 'Common.SideEffectsType',
+          TargetEntities : [
+              in.imports
+          ],
+      }
+    )
+    action restoreBackupToOtherHDIContainer(
+      @(
+          mandatory,
+          Common: {
+            ValueListWithFixedValues,
+            ValueList : {
+                $Type : 'Common.ValueListType',
+                CollectionPath : 'HDIContainers',
+                Parameters : [
+                    {
+                        $Type : 'Common.ValueListParameterInOut',
+                        LocalDataProperty : containerId,
+                        ValueListProperty : 'containerId',
+                    },
+                    {
+                        $Type : 'Common.ValueListParameterOut',
+                        LocalDataProperty : description,
+                        ValueListProperty : 'description',
+                    },
+                ],
+            },
+          }
+      ) containerId : String @title: 'HDI Container GUID',
+      @readonly description: String @title: 'HDI Container Description'
+    );
   };
 }

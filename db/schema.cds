@@ -7,6 +7,7 @@ entity Applications: cuid, managed {
   hdiContainers : Composition of many HDIContainers on hdiContainers.application = $self;
 }
 
+@cds.odata.valuelist
 entity HDIContainers: managed {
   key containerId  : String @assert.format : '[0-9A-Z]{32}' @title: 'HDI Container GUID (32 Characters)';
       description  : String @mandatory;

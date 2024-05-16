@@ -133,9 +133,21 @@ class CatalogService extends cds.ApplicationService {
     });
 
     this.on('restoreBackup', async (req) => {
-      console.log('Create Backup Action');
+      console.log('Restore Backup Action');
       console.log('req.data', JSON.stringify(req.data));
       console.log('req.params', JSON.stringify(req.params));
+
+      return _restoreBackup(req);
+
+    });
+
+    this.on('restoreBackupToOtherHDIContainer', async (req) => {
+      console.log('Restore Backup Action');
+      console.log('req.data', JSON.stringify(req.data));
+      console.log('req.params', JSON.stringify(req.params));
+
+      const { containerId, description } = req.data;
+      console.log(`Restore to target HDI Container ID ${ containerId } (${ description })`);
 
       const backup = await SELECT.one.from(req.subject, backup => {
         backup('*'),
@@ -144,6 +156,24 @@ class CatalogService extends cds.ApplicationService {
 
       console.log(`Restore Backup`, JSON.stringify(backup));
 
+      return _restoreBackup(req, containerId);
+    });
+
+
+
+    async function _restoreBackup(req, targetContainer) {
+
+      const backup = await SELECT.one.from(req.subject, backup => {
+        backup('*'),
+          backup.hdiContainer('*')
+      });
+
+      console.log(`Restore Backup`, JSON.stringify(backup));
+
+      if (!targetContainer) {
+        targetContainer = backup.hdiContainer.containerId
+      }
+
       const conn = await _getHanaConnection();
 
       const awsS3SourcePath = `s3-${s3Credentials.region}://${s3Credentials.access_key_id}:${s3Credentials.secret_access_key}@${s3Credentials.bucket}/${backup.path}`;
@@ -151,7 +181,7 @@ class CatalogService extends cds.ApplicationService {
       await conn.exec('CREATE LOCAL TEMPORARY COLUMN TABLE #PARAMETERS LIKE _SYS_DI.TT_PARAMETERS;');
       await conn.exec(`INSERT INTO #PARAMETERS (KEY, VALUE) VALUES ('source_path', '${awsS3SourcePath}');`);
       await conn.exec(`INSERT INTO #PARAMETERS (KEY, VALUE) VALUES ('original_container_name', '${backup.hdiContainer.containerId}');`);
-      const aImportResult = await conn.exec(`CALL _SYS_DI#BACKUP.IMPORT_CONTAINER_FOR_COPY('${backup.hdiContainer.containerId}', '', '', #PARAMETERS, ?, ?, ?);`);
+      const aImportResult = await conn.exec(`CALL _SYS_DI#BACKUP.IMPORT_CONTAINER_FOR_COPY('${targetContainer}', '', '', #PARAMETERS, ?, ?, ?);`);
       await conn.exec(`DROP TABLE #PARAMETERS;`);
 
       // Filter the array to keep the first two entries and all entries with severity "ERROR"
@@ -186,8 +216,9 @@ class CatalogService extends cds.ApplicationService {
       conn.disconnect();
 
       return req.info("Backup was successfully imported");
+    };
 
-    });
+
 
     return super.init();
   }

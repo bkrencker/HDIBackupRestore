@@ -234,6 +234,11 @@ annotate service.Backups with @(
             Action : 'CatalogService.restoreBackup',
             Label : 'Restore Backup',
         },
+        {
+            $Type : 'UI.DataFieldForAction',
+            Action : 'CatalogService.restoreBackupToOtherHDIContainer',
+            Label : 'Restore to other HDI Container',
+        },
     ]
 );
 annotate service.Imports with @(
