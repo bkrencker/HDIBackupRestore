@@ -236,3 +236,31 @@ annotate service.Backups with @(
         },
     ]
 );
+annotate service.Imports with @(
+    UI.Facets : [
+        {
+            $Type : 'UI.ReferenceFacet',
+            Label : 'Restore Information',
+            ID : 'RestoreInformation',
+            Target : '@UI.FieldGroup#RestoreInformation',
+        },
+    ],
+    UI.FieldGroup #RestoreInformation : {
+        $Type : 'UI.FieldGroupType',
+        Data : [
+            {
+                $Type : 'UI.DataField',
+                Value : createdBy,
+            },{
+                $Type : 'UI.DataField',
+                Value : createdAt,
+            },{
+                $Type : 'UI.DataField',
+                Value : importLogs,
+                Label : 'Restore Logs',
+            },],
+    }
+);
+annotate service.Imports with {
+    importLogs @UI.MultiLineText : true
+};
