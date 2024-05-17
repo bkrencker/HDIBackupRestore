@@ -6,9 +6,8 @@ const { uuid } = cds.utils;
 const hana = require('@sap/hana-client');
 
 /**
- * Inspiration for Working with AWS S3 SDK
- * https://github.com/cap-js/attachments/blob/main/lib/aws-s3.js
- * https://community.sap.com/t5/technology-blogs-by-members/working-with-files-in-cap-and-amazon-s3/ba-p/13427432
+ * Setup AWS S3 Client
+ * Credentials are read from Binding
  */
 const s3Credentials = JSON.parse(process.env.VCAP_SERVICES).objectstore[0].credentials;
 const { S3Client, GetObjectCommand, HeadBucketCommand, ListObjectsV2Command, DeleteObjectCommand } = require("@aws-sdk/client-s3");
@@ -65,7 +64,7 @@ class CatalogService extends cds.ApplicationService {
       await conn.exec('CREATE LOCAL TEMPORARY COLUMN TABLE #PARAMETERS LIKE _SYS_DI.TT_PARAMETERS;');
       await conn.exec(`INSERT INTO #PARAMETERS (KEY, VALUE) VALUES ('source_path', '${awsS3SourcePath}');`);
       await conn.exec(`INSERT INTO #PARAMETERS (KEY, VALUE) VALUES ('original_container_name', '${backup.hdiContainer.containerId}');`);
-      const aImportResult = await conn.exec(`CALL _SYS_DI#BACKUP.IMPORT_CONTAINER_FOR_COPY('${targetContainer}', '', '', #PARAMETERS, ?, ?, ?);`);
+      const aImportResult = await conn.exec(`CALL _SYS_DI#BROKER_CG.IMPORT_CONTAINER_FOR_COPY('${targetContainer}', '', '', #PARAMETERS, ?, ?, ?);`);
       await conn.exec(`DROP TABLE #PARAMETERS;`);
 
       // Filter the array to keep the first two entries and all entries with severity "ERROR"
@@ -144,7 +143,7 @@ class CatalogService extends cds.ApplicationService {
 
       await conn.exec('CREATE LOCAL TEMPORARY COLUMN TABLE #PARAMETERS LIKE _SYS_DI.TT_PARAMETERS;');
       await conn.exec(`INSERT INTO #PARAMETERS (KEY, VALUE) VALUES ('target_path', '${awsS3TargetPath}');`);
-      const aExportResult = await conn.exec(`CALL _SYS_DI#BACKUP.EXPORT_CONTAINER_FOR_COPY('${hdiContainer.containerId}', '', '', #PARAMETERS, ?, ?, ?);`);
+      const aExportResult = await conn.exec(`CALL _SYS_DI#BROKER_CG.EXPORT_CONTAINER_FOR_COPY('${hdiContainer.containerId}', '', '', #PARAMETERS, ?, ?, ?);`);
       await conn.exec(`DROP TABLE #PARAMETERS;`);
 
       console.log('Result:', aExportResult);
