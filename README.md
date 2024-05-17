@@ -69,10 +69,12 @@ Login to Hana DB as `DBADMIN`and follow this Blog to create and import the Certi
 [Export/Import an SAP HDI Container for Copy Purposes to a Cloud Store](https://community.sap.com/t5/technology-blogs-by-sap/export-import-an-sap-hdi-container-for-copy-purposes-to-a-cloud-store/ba-p/13559291)
 
 The OpenSSL Command I used was following this pattern. Use the Bucket Name and Host from CF Instance Binding.
-OpenSSL> s_client -host <S3 Bucket>.<S3 Host> -port 443 -prexit -showcerts
+OpenSSL> s_client -host `<S3 Bucket>.<S3 Host>` -port 443 -prexit -showcerts
 
 For example:
+```
 OpenSSL> s_client -host hcp-xxxyyzzzzzzz.s3-eu-central-1.amazonaws.com -port 443 -prexit -showcerts
+```
 
 ### Create a HDI Admin User
 
@@ -131,6 +133,7 @@ cds.requires.hanadb.credentials.pw=<Hana DB Password>
 It is possible to use WinSCP to access the Bucket on S3 storage. Follow the following instructions. I recommend to create a new ServiceKey on objectstore instance on BTP for the access.
 
 The Backup Application creates a new folder for every Application and a subfolder for HDI Containers. There all backups are saved.
+
 ![](README/WinSCP.PNG)
 
 [Use WinSCP to access S3 Store](https://community.sap.com/t5/technology-blogs-by-sap/how-to-access-an-btp-object-store-aws-s3-bucket-from-local-desktop/ba-p/13552292)
@@ -140,6 +143,10 @@ The Backup Application creates a new folder for every Application and a subfolde
 # Learn More
 
 [Export/Import an SAP HDI Container for Copy Purposes to a Cloud Store](https://community.sap.com/t5/technology-blogs-by-sap/export-import-an-sap-hdi-container-for-copy-purposes-to-a-cloud-store/ba-p/13559291)
+
 [Use WinSCP to access S3 Store](https://community.sap.com/t5/technology-blogs-by-sap/how-to-access-an-btp-object-store-aws-s3-bucket-from-local-desktop/ba-p/13552292)
+
 [HDI Container Administration](https://github.com/SAP-samples/btp-cap-multitenant-saas/blob/main/docu/4-expert/hdi-container-administration/README.md)
+
 [CAP Attachment Plugin](https://github.com/cap-js/attachments/blob/main/README.md)
+
