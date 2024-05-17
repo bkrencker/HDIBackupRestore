@@ -8,17 +8,33 @@ We checked the possibilities for Data Restore options that are available for Han
 
 Therefore we looked for other options and since we can Export / Import HDI Containers manually from the Hana Database Explorer, we wanted to automate this process.
 
-Therefore I developed a CAP Application, which can Export (Backup) and Import (Restore) HDI Containers through a Fiori Elements Frontend. The Backups are stored on AWS S3 ObjectStorage (as a BTP Service). 
+Therefore I developed a CAP Application, which can `Export (Backup) and Import (Restore) HDI Containers` through a Fiori Elements Frontend. The Backups are stored on AWS S3 ObjectStorage (as a BTP Service). 
 
 It is also possible to completely automate the creation of the Backups through Cloud Scheduling.
+
+And as `one more thing` this App can also be used for environment copying data from PROD to QAS / DEV because you can choose to which HDI Container you wand to restore a backup.
 
 Feel free to use this project for your own use cases and to submit Pull Requests to add more features.
 
 ## Functionality
 
+The structure inside the application is a follows:
+```
+  Applications
+    HDI Containers
+      Backups
+        Restores
+```
+
+Overview of the List Report:
+
 ![](README/AppOverview.PNG)
 
+Overview of a Backup. Every backup created a new entry.
+
 ![](README/AppBackup.PNG)
+
+Overview of a Restore. Every restore creates a new entry.
 
 ![](README/AppRestore.PNG)
 
