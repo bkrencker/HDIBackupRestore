@@ -1,29 +1,31 @@
-# Application Overview
+# BTP Toolbox: HDI Container Backup & Restore (Export / Import)
 
-## Motivation
+This is the first application I publish for creating a Swiss Knife Toolbox that helps running & operating apps on SAP BTP.
+
+## App Motivation
 
 We have multiple productive CAP applications running on BTP using Hana Cloud as Database. Recently, we had a case where some data was lossed after CAP deployment. 
 
-We checked the possibilities for Data Restore options that are available for Hana DB and also created a Service Ticket (OSS-Ticket) to SAP Support. We found out that it is not easy to restore just a single HDI Container. Always the whole Database is restored. You can restore it to a new Instance (via OSS Ticket) tough and then extract Data from there, but this is not an easy workflow and we depend on SAP Support. Also we do not have access to the Full Data Backups which are running inside the Hana DB.
+We checked the possibilities for Data Restore that are available for Hana DB via OSS-Ticket with SAP Support. We found out that it is not easy to restore just a single HDI Container. Always the whole Database is restored. You can restore it to a new Instance (via OSS Ticket) tough and extract Data from there, but this is not an easy workflow and depending on SAP Support. Also we do not have access to the Full Data Backups which are creating within the Hana DB.
 
 Therefore we looked for other options and since we can Export / Import HDI Containers manually from the Hana Database Explorer, we wanted to automate this process.
 
-Therefore I developed a CAP Application, which can `Export (Backup) and Import (Restore) HDI Containers` through a Fiori Elements Frontend. The Backups are stored on AWS S3 ObjectStorage (as a BTP Service). 
+That's why I developed a CAP Application, which can `Export (Backup) and Import (Restore) HDI Containers` through a Fiori Elements Frontend. The Backups are stored on AWS S3 ObjectStorage (as a BTP Service). 
 
 It is also possible to completely automate the creation of the Backups through Cloud Scheduling.
 
-And as `one more thing` this App can also be used for environment copying data from PROD to QAS / DEV because you can choose to which HDI Container you wand to restore a backup.
+And as `one more thing` this App can also be used for `HDI environment copy (data from PROD to QAS / DEV)` because you can choose to which target HDI Container you wand to restore a backup.
 
-Feel free to use this project for your own use cases and to submit Pull Requests to add more features.
+Feel free to use this project for your own use case and to submit a Pull Requests to add more features.
 
 ## Functionality
 
-The structure inside the application is a follows:
+The data structure inside the application is a follows with one-to-many cardinality (top-down):
 ```
-  Applications
-    HDI Containers
-      Backups
-        Restores
+  Applications      : on this level you can add your BTP application names
+    HDI Containers  : here you fill the HDI Container IDs
+      Backups       : every backup creates an entry here storing AWS object key & logs
+        Restores    : after a restore a new entry here is created storing target HDI Container & logs
 ```
 
 Overview of the List Report:
@@ -52,9 +54,9 @@ File or Folder | Purpose
 `.env` | Manually create this file containing the Environment Variables to connect to Hana DB as BACKUP user
 `test/data/` | Sample data file which is only used when running locally
 
-# Setup Application for running on BTP
+## Setup Application for running on BTP
 
-## Summary
+### Summary
 
 - Build and deploy the project to your CF environment to create all the necessary instances
 - Setup Hana DB: Import AWS Certificate, create BACKUP-User, grant HDI Privileges
@@ -62,9 +64,7 @@ File or Folder | Purpose
 - Ready to use the CAP Application
 - Local running possible after deployment and `npm run bindObjectstore`. Also create a .env file containing the Environment Variables (see below). Then run `cds watch --profile hybrid`.
 
-## Setup Hana DB
-
-### Import Certificate
+### Hana DB: Import Certificate
 Login to Hana DB as `DBADMIN`and follow this Blog to create and import the Certificate.
 [Export/Import an SAP HDI Container for Copy Purposes to a Cloud Store](https://community.sap.com/t5/technology-blogs-by-sap/export-import-an-sap-hdi-container-for-copy-purposes-to-a-cloud-store/ba-p/13559291)
 
@@ -76,17 +76,17 @@ For example:
 OpenSSL> s_client -host hcp-xxxyyzzzzzzz.s3-eu-central-1.amazonaws.com -port 443 -prexit -showcerts
 ```
 
-### Create a HDI Admin User
+### Hana DB: Create a HDI Admin User
 
 If not yet existing, create a User which has HDI Administration Privileges. A good starting point is following Blog:
 
 [HDI Container Administration](https://github.com/SAP-samples/btp-cap-multitenant-saas/blob/main/docu/4-expert/hdi-container-administration/README.md)
 
-### Create BACKUP User
+### Hana DB: Create BACKUP User
 
 Login as `DBADMIN` on the Hana DB and create a `BACKUP` User.
 
-### Grant HDI Privileges to BACKUP User
+### Hana DB: Grant HDI Privileges to BACKUP User
 
 Login as `HDI Admin User` on the Hana DB and go to HDI Administration.
 
@@ -115,7 +115,7 @@ Screenshot
 *Note that `BROKER_CG` contains all HDI Containers on the Hana DB. If you prefer to restrict access to only certain HDI Containers, create a separate Container Group and add only selected HDI Containers.*
 
 
-### Environment Variables
+### App: Environment Variables
 
 When running locally create `.env` File with following variables to connect with `BACKUP` User to the Hana DB Instance.
 As Hostname use the `SQL Endpoint` which is listed on the Hana Cloud Instance Dashboard.
@@ -126,9 +126,9 @@ cds.requires.hanadb.credentials.user=<Hana DB Username>
 cds.requires.hanadb.credentials.pw=<Hana DB Password>
 ```
 
-# Tips and Tricks
+## Tips and Tricks
 
-## Access S3 Storage using WinSCP
+### Access S3 Storage using WinSCP
 
 It is possible to use WinSCP to access the Bucket on S3 storage. Follow the following instructions. I recommend to create a new ServiceKey on objectstore instance on BTP for the access.
 
@@ -140,7 +140,7 @@ The Backup Application creates a new folder for every Application and a subfolde
 
 
 
-# Learn More
+## Learn More
 
 [Export/Import an SAP HDI Container for Copy Purposes to a Cloud Store](https://community.sap.com/t5/technology-blogs-by-sap/export-import-an-sap-hdi-container-for-copy-purposes-to-a-cloud-store/ba-p/13559291)
 
