@@ -2,7 +2,7 @@
   "name": "HDI-Backup",
   "version": "1.0.0",
   "description": "A simple CAP project.",
-  "repository": "<Add your repository here>",
+  "repository": "https://github.com/bkrencker/HDIBackupRestore",
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {
