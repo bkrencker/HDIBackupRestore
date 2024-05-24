@@ -91,6 +91,10 @@ annotate service.HDIContainers with @(
                 $Type : 'UI.DataField',
                 Value : containerId,
                 Label : 'Container GUID',
+            },
+            {
+                $Type : 'UI.DataField',
+                Value : scheduled,
             },],
     }
 );
@@ -110,6 +114,11 @@ annotate service.HDIContainers with @(
             $Type : 'UI.DataField',
             Value : containerId,
             Label : 'Container GUID',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : scheduled,
+            Label : 'Scheduled?',
         },]
 );
 annotate service.HDIContainers with @(
@@ -176,6 +185,10 @@ annotate service.Backups with @(
             {
                 $Type : 'UI.DataField',
                 Value : sizeInMB,
+            },
+            {
+                $Type : 'UI.DataField',
+                Value : fromScheduler,
             },],
     }
 );
@@ -214,6 +227,10 @@ annotate service.Backups with @(
             $Type : 'UI.DataField',
             Value : sizeInMB,
             Label : 'MB',
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : fromScheduler,
         },]
 );
 annotate service.Backups with @(
@@ -307,3 +324,6 @@ annotate service.Imports with @(
             },],
     }
 );
+annotate service.Backups with {
+    fromScheduler @Common.FieldControl : #ReadOnly
+};

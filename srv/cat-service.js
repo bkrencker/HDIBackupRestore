@@ -19,25 +19,131 @@ const s3 = new S3Client({
   }
 });
 
+/**
+ * Create and get a new Hana Database Connection for the BACKUP-User
+ * @returns Hana Database Connection using @sap/hana-client
+ */
+async function _getHanaConnection() {
+  const conn = hana.createConnection();
+  const conn_params = {
+    serverNode: `${cds.requires.hanadb.credentials.host}`,
+    uid: `${cds.requires.hanadb.credentials.user}`,
+    pwd: `${cds.requires.hanadb.credentials.pw}`
+  };
+
+  await conn.connect(conn_params);
+
+  console.log('Hana Connection established');
+  return conn;
+};
+
+async function _checkS3Bucket() {
+  // Check access to S3 Bucket
+  const resp = await s3.send(new HeadBucketCommand({
+    "Bucket": s3Credentials.bucket
+  }));
+  console.log('S3 Bucket', resp);
+}
+
+/**
+ * 
+ * @param {CatalogService.HDIContainers} hdiContainer HDIContainer Entity with expanded Applications
+ * @param {cds.Request} req CAP CDS Request Object (used for returning error messages)
+ * @param {Boolean} bScheduled TRUE if run by scheduler (Default FALSE)
+ * @returns 
+ */
+async function _createBackup(hdiContainer, req, bScheduled = false) {
+
+  console.log(`Create Backup for HDI Container`, JSON.stringify(hdiContainer));
+
+  if (!hdiContainer || hdiContainer.containerId.length === 0) {
+    return req.error({
+      code: 'NO_HDI_CONTAINER',
+      message: 'HDI Container not found',
+      status: 418
+    });
+  }
+
+  const conn = await _getHanaConnection();
+  const createdTimestamp = new Date();
+
+  const applicationString = hdiContainer.application?.name?.length > 0 ? hdiContainer.application.name : hdiContainer.application_ID;
+  const awsS3FolderPath = `${applicationString}/${hdiContainer.containerId}/${createdTimestamp.toISOString()}`;
+  const awsS3TargetPath = `s3-${s3Credentials.region}://${s3Credentials.access_key_id}:${s3Credentials.secret_access_key}@${s3Credentials.bucket}/${awsS3FolderPath}`;
+
+  console.log('Store Backup on S3 Path', awsS3FolderPath);
+
+  await conn.exec('CREATE LOCAL TEMPORARY COLUMN TABLE #PARAMETERS LIKE _SYS_DI.TT_PARAMETERS;');
+  await conn.exec(`INSERT INTO #PARAMETERS (KEY, VALUE) VALUES ('target_path', '${awsS3TargetPath}');`);
+  const aExportResult = await conn.exec(`CALL _SYS_DI#BROKER_CG.EXPORT_CONTAINER_FOR_COPY('${hdiContainer.containerId}', '', '', #PARAMETERS, ?, ?, ?);`);
+  await conn.exec(`DROP TABLE #PARAMETERS;`);
+
+  console.log('Result:', aExportResult);
+
+  const errorMessages = aExportResult
+    .filter(item => item.SEVERITY === 'ERROR')
+    .map(item => item.MESSAGE);
+
+  if (errorMessages.length > 0) {
+    console.log('Error messages found', errorMessages);
+    return req.error({
+      code: 'EXPORT_ERROR',
+      message: `Export of HDI Container failed: \n${errorMessages.toString()}`,
+      status: 418
+    });
+  }
+
+  /**
+   * Check if files are created on S3 storage.
+   * Calculate Size of all Files and also the number of files (just for information).
+   */
+  const { Contents } = await s3.send(new ListObjectsV2Command({
+    "Bucket": s3Credentials.bucket,
+    "Prefix": awsS3FolderPath
+  }));
+
+  if (!Contents) {
+    return req.error({
+      code: 'EXPORT_ERROR',
+      message: `Export not found on S3 Storage, check Export Log: \n${JSON.stringify(aExportResult)}`,
+      status: 418
+    });
+  }
+
+  let folderSize = 0;
+  let numberOfFiles = 0;
+
+  Contents.forEach(obj => {
+    folderSize += obj.Size;
+    numberOfFiles++;
+  });
+
+  console.log(`Backup containing ${numberOfFiles} Files that are created on S3 storage`);
+
+  // Convert bytes to megabytes
+  const folderSizeInMB = folderSize / (1024 * 1024);
+  console.log(`Size of Backup is ${folderSizeInMB.toFixed(2)} MB`);
+
+  let newBackupEntry = {
+    ID: uuid(),
+    created: createdTimestamp,
+    hdiContainer_containerId: hdiContainer.containerId,
+    path: awsS3FolderPath,
+    exportLogs: JSON.stringify(aExportResult),
+    numberOfFiles: numberOfFiles,
+    sizeInMB: folderSizeInMB.toFixed(0),
+    fromScheduler: bScheduled
+  };
+
+  console.log('Insert New Backup Entry', newBackupEntry);
+  const insertResult = await INSERT(newBackupEntry).into(Backups);
+  console.log('Insert new Backup result', insertResult);
+
+  conn.disconnect();
+}
 
 class CatalogService extends cds.ApplicationService {
   init() {
-
-    /**
-     * Create and get a new Hana Database Connection for the BACKUP-User
-     * @returns Hana Database Connection using @sap/hana-client
-     */
-    async function _getHanaConnection() {
-      const conn = hana.createConnection();
-      const conn_params = {
-        serverNode: `${cds.requires.hanadb.credentials.host}`,
-        uid: `${cds.requires.hanadb.credentials.user}`,
-        pwd: `${cds.requires.hanadb.credentials.pw}`
-      };
-
-      await conn.connect(conn_params);
-      return conn;
-    };
 
     /**
      * Restore a HDI Backup from S3 Objectstore into a HDI Target Container
@@ -107,11 +213,7 @@ class CatalogService extends cds.ApplicationService {
      * Note that the Backup is directly written from Hana DB to S3 store.
      */
     this.on('createBackup', async (req) => {
-      // Check access to S3 Bucket
-      const resp = await s3.send(new HeadBucketCommand({
-        "Bucket": s3Credentials.bucket
-      }));
-      console.log('S3 Bucket', resp);
+      await _checkS3Bucket();
 
       console.log('Create Backup Action');
       console.log('req.data', JSON.stringify(req.data));
@@ -122,90 +224,7 @@ class CatalogService extends cds.ApplicationService {
           hdiContainer.application('*')
       });
 
-      console.log(`Create Backup for HDI Container`, JSON.stringify(hdiContainer));
-
-      if (!hdiContainer || hdiContainer.containerId.length === 0) {
-        return req.error({
-          code: 'NO_HDI_CONTAINER',
-          message: 'HDI Container not found',
-          status: 418
-        });
-      }
-
-      const conn = await _getHanaConnection();
-      const createdTimestamp = new Date();
-
-      const applicationString = hdiContainer.application?.name?.length > 0 ? hdiContainer.application.name : hdiContainer.application_ID;
-      const awsS3FolderPath = `${applicationString}/${hdiContainer.containerId}/${createdTimestamp.toISOString()}`;
-      const awsS3TargetPath = `s3-${s3Credentials.region}://${s3Credentials.access_key_id}:${s3Credentials.secret_access_key}@${s3Credentials.bucket}/${awsS3FolderPath}`;
-
-      console.log('Store Backup on S3 Path', awsS3FolderPath);
-
-      await conn.exec('CREATE LOCAL TEMPORARY COLUMN TABLE #PARAMETERS LIKE _SYS_DI.TT_PARAMETERS;');
-      await conn.exec(`INSERT INTO #PARAMETERS (KEY, VALUE) VALUES ('target_path', '${awsS3TargetPath}');`);
-      const aExportResult = await conn.exec(`CALL _SYS_DI#BROKER_CG.EXPORT_CONTAINER_FOR_COPY('${hdiContainer.containerId}', '', '', #PARAMETERS, ?, ?, ?);`);
-      await conn.exec(`DROP TABLE #PARAMETERS;`);
-
-      console.log('Result:', aExportResult);
-
-      const errorMessages = aExportResult
-        .filter(item => item.SEVERITY === 'ERROR')
-        .map(item => item.MESSAGE);
-
-      if (errorMessages.length > 0) {
-        console.log('Error messages found', errorMessages);
-        return req.error({
-          code: 'EXPORT_ERROR',
-          message: `Export of HDI Container failed: \n${errorMessages.toString()}`,
-          status: 418
-        });
-      }
-
-      /**
-       * Check if files are created on S3 storage.
-       * Calculate Size of all Files and also the number of files (just for information).
-       */
-      const { Contents } = await s3.send(new ListObjectsV2Command({
-        "Bucket": s3Credentials.bucket,
-        "Prefix": awsS3FolderPath
-      }));
-
-      if (!Contents) {
-        return req.error({
-          code: 'EXPORT_ERROR',
-          message: `Export not found on S3 Storage, check Export Log: \n${JSON.stringify(aExportResult)}`,
-          status: 418
-        });
-      }
-
-      let folderSize = 0;
-      let numberOfFiles = 0;
-
-      Contents.forEach(obj => {
-        folderSize += obj.Size;
-        numberOfFiles++;
-      });
-
-      console.log(`Backup containing ${numberOfFiles} Files that are created on S3 storage`);
-  
-      // Convert bytes to megabytes
-      const folderSizeInMB = folderSize / (1024 * 1024);
-      console.log(`Size of Backup is ${folderSizeInMB.toFixed(2)} MB`);
-
-      let newBackupEntry = {
-        ID: uuid(),
-        created: createdTimestamp,
-        hdiContainer_containerId: hdiContainer.containerId,
-        path: awsS3FolderPath,
-        exportLogs: JSON.stringify(aExportResult),
-        numberOfFiles: numberOfFiles,
-        sizeInMB : folderSizeInMB.toFixed(0)
-      };
-
-      console.log('Insert New Backup Entry', newBackupEntry);
-      const insertResult = await INSERT(newBackupEntry).into(Backups);
-
-      conn.disconnect();
+      await _createBackup(hdiContainer, req);
 
       return req.info("Backup was successfully created");
 
@@ -280,4 +299,4 @@ class CatalogService extends cds.ApplicationService {
   }
 };
 
-module.exports = { CatalogService }
+module.exports = { CatalogService, _checkS3Bucket, _createBackup }

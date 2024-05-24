@@ -11,6 +11,7 @@ entity Applications: cuid, managed {
 entity HDIContainers: managed {
   key containerId  : String @assert.format : '[0-9A-Z]{32}' @title: 'HDI Container GUID (32 Characters)';
       description  : String @mandatory;
+      scheduled    : Boolean default false @title : 'Scheduled Backups?';
 
       application  : Association to one Applications;
       backups      : Composition of many Backups on backups.hdiContainer = $self;
@@ -22,6 +23,7 @@ entity Backups: cuid, managed {
   exportLogs    : String @Core.Immutable;
   numberOfFiles : Integer @title: 'Number of Files';
   sizeInMB      : Integer @title: 'Size in MB';
+  fromScheduler : Boolean default false @title : 'Created by Scheduler?';
 
   hdiContainer  : Association to one HDIContainers;
   imports       : Composition of many Imports on imports.backup = $self;
