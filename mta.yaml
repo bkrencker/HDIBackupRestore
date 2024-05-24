@@ -25,6 +25,7 @@ modules:
       #cds_requires_hanadb_credentials_host: <Connection URL from Hana DB>
       #cds_requires_hanadb_credentials_user: <Backup User's Username>
       #cds_requires_hanadb_credentials_pw: <Backup User's Password>
+      #cds_requires_scheduler_apiKey: <Pseudo API Key for minimal security>
     build-parameters:
       builder: npm
       ignore:

@@ -11,12 +11,23 @@ class SchedulerService extends cds.ApplicationService {
 
     /**
      * 
-     * Test with HTTP GET http://localhost:4004/odata/v4/scheduler/createBackups()
+     * Test with GET http://localhost:4004/odata/v4/scheduler/createBackups(apiKey=1234567890)
      */
     this.on('createBackups', async (req) => {
       console.log('Create Backup by Scheduler Function');
       console.log('req.data', JSON.stringify(req.data));
       console.log('req.params', JSON.stringify(req.params));
+
+      const { apiKey } = req.data;
+
+      if (!apiKey || apiKey !== cds.requires.scheduler.apiKey) {
+        console.error('API Key does not match', apiKey, cds.requires.scheduler.apiKey);
+        return req.error({
+          code: 'EXPORT_ERROR',
+          message: `API Key does not match`,
+          status: 418
+        });
+      }
 
       const hdiContainers = await SELECT.from(HDIContainers, hdiContainer => {
         hdiContainer('*'),
