@@ -1,5 +1,6 @@
 using {my} from '../db/schema';
 
+//@requires: 'any'  // public access !!
 service SchedulerService {
 
   /**

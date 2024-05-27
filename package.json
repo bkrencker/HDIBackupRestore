@@ -35,7 +35,10 @@
     "requires": {
       "[production]": {
         "db": "hana",
-        "auth": "xsuaa"
+        "auth": {
+          "kind": "xsuaa",
+          "restrict_all_services": false
+        }
       }
     }
   }
