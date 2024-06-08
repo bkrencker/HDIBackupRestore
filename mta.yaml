@@ -25,7 +25,6 @@ modules:
       #cds_requires_hanadb_credentials_host: <Connection URL from Hana DB>
       #cds_requires_hanadb_credentials_user: <Backup User's Username>
       #cds_requires_hanadb_credentials_pw: <Backup User's Password>
-      #cds_requires_scheduler_apiKey: <Pseudo API Key for minimal security>
     build-parameters:
       builder: npm
       ignore:
@@ -38,6 +37,7 @@ modules:
       - name: HDI-Backup-db
       - name: HDI-Backup-auth
       - name: objectstore
+      - name: scheduler
 
   - name: HDI-Backup-db-deployer
     type: hdb
@@ -91,3 +91,12 @@ resources:
       config:
         xsappname: HDI-Backup-${org}-${space}
         tenant-mode: dedicated
+
+  - name: scheduler
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: jobscheduler
+      service-plan: standard  # minimum schedule frequency of 5 minutes.
+      service-name: jobscheduler
+      config:
+          enable-xsuaa-support: true

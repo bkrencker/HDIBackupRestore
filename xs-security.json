@@ -1,5 +1,15 @@
 {
-  "scopes": [],
+  "xsappname": "HDI-Backup",
+  "tenant-mode": "dedicated",
+  "scopes": [
+    {
+      "name": "$XSAPPNAME.jobscheduler",
+      "description": "Scope for Job Scheduler",
+      "grant-as-authority-to-apps": [
+        "$XSSERVICENAME(jobscheduler)"
+      ]
+    }
+  ],
   "attributes": [],
   "role-templates": []
 }

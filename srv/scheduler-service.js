@@ -18,31 +18,22 @@ class SchedulerService extends cds.ApplicationService {
       console.log('req.data', JSON.stringify(req.data));
       console.log('req.params', JSON.stringify(req.params));
 
-      const { apiKey } = req.data;
-
-      if (!apiKey || apiKey !== cds.requires.scheduler.apiKey) {
-        console.error('API Key does not match', apiKey, cds.requires.scheduler.apiKey);
-        return req.error({
-          code: 'EXPORT_ERROR',
-          message: `API Key does not match`,
-          status: 418
-        });
-      }
-
       const hdiContainers = await SELECT.from(HDIContainers, hdiContainer => {
         hdiContainer('*'),
           hdiContainer.application('*')
-      });
+      }).where({scheduled: true});
 
-      console.log('HDI Containers', hdiContainers);
+      console.log('HDI Containers to create a backup:', hdiContainers);
 
       await CatalogService._checkS3Bucket();
+      console.log('S3 Bucket is available');
 
       for (let hdiContainer of hdiContainers) {
         await CatalogService._createBackup(hdiContainer, req, true);
       }
 
-      return ['OK'];
+      return JSON.stringify(hdiContainers);
+
     });
 
     /**

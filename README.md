@@ -28,6 +28,10 @@ The data structure inside the application is a follows with one-to-many cardinal
         Restores    : after a restore a new entry here is created storing target HDI Container & logs
 ```
 
+Fiori Elements Page Map:
+
+![](README/pagemap.PNG)
+
 Overview of the List Report:
 
 ![](README/AppOverview.PNG)
@@ -125,6 +129,20 @@ cds.requires.hanadb.credentials.host=<Hana DB Connection String>
 cds.requires.hanadb.credentials.user=<Hana DB Username>
 cds.requires.hanadb.credentials.pw=<Hana DB Password>
 ```
+
+## Automate Backup Creation using BTP Job Scheduler
+
+Using the mta.yaml file of this project will already create a BTP Scheduler instance.
+
+After deployment to BTP, make sure you assign the Scheduler Administrator role to your user.
+
+Then, you can create a new scheduled job.
+
+![](README/ScheduledJob.PNG)
+
+Make sure to activate the checkbox on the HDI Container. Only flagged HDI Containers will have a backup created from scheduler calls.
+
+![](README/scheduled_flag.PNG)
 
 ## Tips and Tricks
 
