@@ -36,8 +36,8 @@
       "[production]": {
         "db": "hana",
         "auth": {
-          "kind": "xsuaa",
-          "restrict_all_services": false
+          "kind": "xsuaa"
+          
         }
       }
     }
