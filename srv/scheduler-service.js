@@ -39,6 +39,9 @@ class SchedulerService extends cds.ApplicationService {
       const btpSchedulerCredentials = JSON.parse(process.env.VCAP_SERVICES).jobscheduler[0].credentials;
       const authString = Buffer.from(`${btpSchedulerCredentials.uaa.clientid}:${btpSchedulerCredentials.uaa.clientsecret}`).toString('base64');
 
+      /**
+       * Now get all HDI Containers which have the scheduler-flag set to 'true'
+       */
       const hdiContainers = await SELECT.from(HDIContainers, hdiContainer => {
         hdiContainer('*'),
           hdiContainer.application('*')
@@ -48,7 +51,7 @@ class SchedulerService extends cds.ApplicationService {
       console.log('S3 Bucket is available');
 
       /**
-       * BTP Scheduler Timeout after 15 seconds.. Therefore send an async response.
+       * BTP Scheduler Timeout after 15 seconds.. Therefore process request in background and send an async response to the BTP Scheduler.
        * See https://community.sap.com/t5/technology-blogs-by-sap/using-job-scheduler-in-sap-cloud-platform-5-long-running-async-jobs/ba-p/13451049
        */
       cds.spawn(async () => {
