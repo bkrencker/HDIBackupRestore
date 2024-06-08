@@ -25,11 +25,14 @@ entity Backups: cuid, managed {
   sizeInMB      : Integer @title: 'Size in MB';
   fromScheduler : Boolean default false @title : 'Created by Scheduler?';
 
+  description   : String @title: 'Description';
+
   hdiContainer  : Association to one HDIContainers;
   imports       : Composition of many Imports on imports.backup = $self;
 }
 
 entity Imports: cuid, managed {
+  description     : String @title: 'Description';
   importLogs      : String;
   backup          : Association to one Backups;
   targetContainer : Association to one HDIContainers;

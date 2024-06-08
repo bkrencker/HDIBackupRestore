@@ -167,6 +167,10 @@ annotate service.Backups with @(
         Data : [
             {
                 $Type : 'UI.DataField',
+                Value : description,
+            },
+            {
+                $Type : 'UI.DataField',
                 Value : createdBy,
             },
             {
@@ -200,6 +204,11 @@ annotate service.Imports with @(
         },{
             $Type : 'UI.DataField',
             Value : createdBy,
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : description,
+            Label : 'Description',
         },]
 );
 annotate service.Backups with @(
@@ -220,6 +229,10 @@ annotate service.Backups with @(
         },
         {
             $Type : 'UI.DataField',
+            Value : description,
+        },
+        {
+            $Type : 'UI.DataField',
             Value : numberOfFiles,
             Label : 'Files',
         },
@@ -231,6 +244,7 @@ annotate service.Backups with @(
         {
             $Type : 'UI.DataField',
             Value : fromScheduler,
+            Label : 'Scheduler?',
         },]
 );
 annotate service.Backups with @(
@@ -296,6 +310,10 @@ annotate service.Imports with @(
             },{
                 $Type : 'UI.DataField',
                 Value : createdAt,
+            },
+            {
+                $Type : 'UI.DataField',
+                Value : description,
             },{
                 $Type : 'UI.DataField',
                 Value : importLogs,
