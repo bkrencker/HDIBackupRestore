@@ -11,6 +11,7 @@
     "@sap/cds-hana": "^2",
     "@sap/hana-client": "^2.20.20",
     "@sap/xssec": "^3",
+    "axios": "^1.7.2",
     "express": "^4"
   },
   "devDependencies": {
@@ -37,7 +38,6 @@
         "db": "hana",
         "auth": {
           "kind": "xsuaa"
-          
         }
       }
     }

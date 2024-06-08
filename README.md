@@ -132,7 +132,7 @@ cds.requires.hanadb.credentials.pw=<Hana DB Password>
 
 ## Automate Backup Creation using BTP Job Scheduler
 
-Using the mta.yaml file of this project will already create a BTP Scheduler instance.
+Using the `mta.yaml` file of this project will already create a BTP Scheduler instance.
 
 After deployment to BTP, make sure you assign the Scheduler Administrator role to your user.
 

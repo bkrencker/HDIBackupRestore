@@ -1,16 +1,24 @@
 const cds = require('@sap/cds');
+const axios = require('axios');
 
 const { HDIContainers } = cds.entities('my');
 
 const CatalogService = require('./cat-service');
+const { request } = require('express');
 
+async function createBackupsInParallel(hdiContainers, req) {
+  const backupPromises = hdiContainers.map(hdiContainer =>
+    CatalogService._createBackup(hdiContainer, req, true)
+  );
 
+  // Wait for all backups to complete
+  await Promise.all(backupPromises);
+};
 
 class SchedulerService extends cds.ApplicationService {
   init() {
 
     /**
-     * 
      * Test with GET http://localhost:4004/odata/v4/scheduler/createBackups(apiKey=1234567890)
      */
     this.on('createBackups', async (req) => {
@@ -18,22 +26,72 @@ class SchedulerService extends cds.ApplicationService {
       console.log('req.data', JSON.stringify(req.data));
       console.log('req.params', JSON.stringify(req.params));
 
+      console.log('Request headers', req.headers);
+
+      /**
+       * Store scheduler data in order to send asynchronous reponse later when background job (backups) has finished
+       */
+      const schedulerJobId = req.headers['x-sap-job-id'];
+      const schedulerScheduleId = req.headers['x-sap-job-schedule-id'];
+      const schedulerRunId = req.headers['x-sap-job-run-id'];
+      const schedulerHost = req.headers['x-sap-scheduler-host'];
+
+      const btpSchedulerCredentials = JSON.parse(process.env.VCAP_SERVICES).jobscheduler[0].credentials;
+      const authString = Buffer.from(`${btpSchedulerCredentials.uaa.clientid}:${btpSchedulerCredentials.uaa.clientsecret}`).toString('base64');
+
       const hdiContainers = await SELECT.from(HDIContainers, hdiContainer => {
         hdiContainer('*'),
           hdiContainer.application('*')
-      }).where({scheduled: true});
-
-      console.log('HDI Containers to create a backup:', hdiContainers);
+      }).where({ scheduled: true });
 
       await CatalogService._checkS3Bucket();
       console.log('S3 Bucket is available');
 
-      for (let hdiContainer of hdiContainers) {
-        await CatalogService._createBackup(hdiContainer, req, true);
-      }
+      /**
+       * BTP Scheduler Timeout after 15 seconds.. Therefore send an async response.
+       * See https://community.sap.com/t5/technology-blogs-by-sap/using-job-scheduler-in-sap-cloud-platform-5-long-running-async-jobs/ba-p/13451049
+       */
+      cds.spawn(async () => {
+        console.log("CDS Spawn");
 
-      return JSON.stringify(hdiContainers);
+        // Get access token for BTP Scheduler instance
+        const response = await axios.get(`${btpSchedulerCredentials.uaa.url}/oauth/token?grant_type=client_credentials&response_type=token`, {
+          headers: {
+            'Authorization': `Basic ${authString}`
+          }
+        });
 
+        const token = response.data.access_token;
+
+        const axiosConfig = {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer ' + token
+          }
+        };
+
+        const schedulerUrl = `${schedulerHost}/scheduler/jobs/${schedulerJobId}/schedules/${schedulerScheduleId}/runs/${schedulerRunId}`;
+
+        createBackupsInParallel(hdiContainers, req)
+          .then(() => {
+            console.log('All backups created successfully');
+            // Async response to scheduler instance
+            axios.put(schedulerUrl, JSON.stringify({success: true, message: `Backups created for ${JSON.stringify(hdiContainers)}`}), axiosConfig);
+          })
+          .catch(err => {
+            console.error('Error creating backups:', err);
+            // Async response to scheduler instance
+            axios.put(schedulerUrl, JSON.stringify({success: false, message: JSON.stringify(err)}), axiosConfig);
+          });
+
+      });
+
+      /**
+       * Async Scheduler should receive HTTP Status 202 to show proper status "RUNNING/ACK_RECVD".
+       * When background job has finished, a final status will be sent asynchronously.
+       */
+      let { res } = req.http;
+      res.status(202).send('Accepted async job, but long-running operation still running.');
     });
 
     /**
