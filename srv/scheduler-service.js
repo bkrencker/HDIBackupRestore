@@ -6,7 +6,7 @@ const { HDIContainers } = cds.entities('my');
 const CatalogService = require('./cat-service');
 const { request } = require('express');
 
-async function createBackupsInParallel(hdiContainers, req) {
+async function _createBackupsInParallel(hdiContainers, req) {
   const backupPromises = hdiContainers.map(hdiContainer =>
     CatalogService._createBackup(hdiContainer, req, true)
   );
@@ -75,7 +75,7 @@ class SchedulerService extends cds.ApplicationService {
 
         const schedulerUrl = `${schedulerHost}/scheduler/jobs/${schedulerJobId}/schedules/${schedulerScheduleId}/runs/${schedulerRunId}`;
 
-        createBackupsInParallel(hdiContainers, req)
+        _createBackupsInParallel(hdiContainers, req)
           .then(() => {
             console.log('All backups created successfully');
             // Async response to scheduler instance
