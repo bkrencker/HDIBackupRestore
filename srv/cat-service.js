@@ -5,6 +5,8 @@ const { uuid } = cds.utils;
 
 const hana = require('@sap/hana-client');
 
+const LOG = cds.log('custom');
+
 /**
  * Setup AWS S3 Client
  * Credentials are read from Binding
@@ -33,7 +35,7 @@ async function _getHanaConnection() {
 
   await conn.connect(conn_params);
 
-  console.log('Hana Connection established');
+  LOG.debug('Hana Connection established');
   return conn;
 };
 
@@ -42,7 +44,7 @@ async function _checkS3Bucket() {
   const resp = await s3.send(new HeadBucketCommand({
     "Bucket": s3Credentials.bucket
   }));
-  console.log('S3 Bucket', resp);
+  LOG.debug('S3 Bucket', resp);
 }
 
 /**
@@ -54,7 +56,7 @@ async function _checkS3Bucket() {
  */
 async function _createBackup(hdiContainer, req, bScheduled = false) {
 
-  console.log(`Create Backup for HDI Container`, JSON.stringify(hdiContainer));
+  LOG.debug(`Create Backup for HDI Container`, JSON.stringify(hdiContainer));
 
   if (!hdiContainer || hdiContainer.containerId.length === 0) {
     return req.error({
@@ -71,21 +73,21 @@ async function _createBackup(hdiContainer, req, bScheduled = false) {
   const awsS3FolderPath = `${applicationString}/${hdiContainer.containerId}/${createdTimestamp.toISOString()}`;
   const awsS3TargetPath = `s3-${s3Credentials.region}://${s3Credentials.access_key_id}:${s3Credentials.secret_access_key}@${s3Credentials.bucket}/${awsS3FolderPath}`;
 
-  console.log('Store Backup on S3 Path', awsS3FolderPath);
+  LOG.debug('Store Backup on S3 Path', awsS3FolderPath);
 
   await conn.exec('CREATE LOCAL TEMPORARY COLUMN TABLE #PARAMETERS LIKE _SYS_DI.TT_PARAMETERS;');
   await conn.exec(`INSERT INTO #PARAMETERS (KEY, VALUE) VALUES ('target_path', '${awsS3TargetPath}');`);
   const aExportResult = await conn.exec(`CALL _SYS_DI#BROKER_CG.EXPORT_CONTAINER_FOR_COPY('${hdiContainer.containerId}', '', '', #PARAMETERS, ?, ?, ?);`);
   await conn.exec(`DROP TABLE #PARAMETERS;`);
 
-  console.log('Result:', aExportResult);
+  LOG.debug('Result:', aExportResult);
 
   const errorMessages = aExportResult
     .filter(item => item.SEVERITY === 'ERROR')
     .map(item => item.MESSAGE);
 
   if (errorMessages.length > 0) {
-    console.log('Error messages found', errorMessages);
+    LOG.debug('Error messages found', errorMessages);
     return req.error({
       code: 'EXPORT_ERROR',
       message: `Export of HDI Container failed: \n${errorMessages.toString()}`,
@@ -118,11 +120,11 @@ async function _createBackup(hdiContainer, req, bScheduled = false) {
     numberOfFiles++;
   });
 
-  console.log(`Backup containing ${numberOfFiles} Files that are created on S3 storage`);
+  LOG.debug(`Backup containing ${numberOfFiles} Files that are created on S3 storage`);
 
   // Convert bytes to megabytes
   const folderSizeInMB = folderSize / (1024 * 1024);
-  console.log(`Size of Backup is ${folderSizeInMB.toFixed(2)} MB`);
+  LOG.debug(`Size of Backup is ${folderSizeInMB.toFixed(2)} MB`);
 
   let newBackupEntry = {
     ID: uuid(),
@@ -135,9 +137,9 @@ async function _createBackup(hdiContainer, req, bScheduled = false) {
     fromScheduler: bScheduled
   };
 
-  console.log('Insert New Backup Entry', newBackupEntry);
+  LOG.debug('Insert New Backup Entry', newBackupEntry);
   const insertResult = await INSERT(newBackupEntry).into(Backups);
-  console.log('Insert new Backup result', insertResult);
+  LOG.debug('Insert new Backup result', insertResult);
 
   conn.disconnect();
 }
@@ -157,7 +159,7 @@ class CatalogService extends cds.ApplicationService {
           backup.hdiContainer('*')
       });
 
-      console.log(`Restore Backup`, JSON.stringify(backup));
+      LOG.debug(`Restore Backup`, JSON.stringify(backup));
 
       if (!targetContainer) {
         targetContainer = backup.hdiContainer.containerId
@@ -178,14 +180,14 @@ class CatalogService extends cds.ApplicationService {
         return index < 2 || (entry.SEVERITY === 'ERROR');
       });
 
-      console.log('Result:', aNewImportLog);
+      LOG.debug('Result:', aNewImportLog);
 
       const errorMessages = aNewImportLog
         .filter(item => item.SEVERITY === 'ERROR')
         .map(item => item.MESSAGE);
 
       if (errorMessages.length > 0) {
-        console.log('Error messages found', errorMessages);
+        LOG.debug('Error messages found', errorMessages);
         return req.error({
           code: 'EXPORT_ERROR',
           message: `Restore of HDI Container failed: \n${errorMessages.toString()}`,
@@ -200,7 +202,7 @@ class CatalogService extends cds.ApplicationService {
         targetContainer_containerId: targetContainer
       };
 
-      console.log('Insert New Backup Entry', newImportEntry);
+      LOG.debug('Insert New Backup Entry', newImportEntry);
       const insertResult = await INSERT(newImportEntry).into(Imports);
 
       conn.disconnect();
@@ -215,9 +217,9 @@ class CatalogService extends cds.ApplicationService {
     this.on('createBackup', async (req) => {
       await _checkS3Bucket();
 
-      console.log('Create Backup Action');
-      console.log('req.data', JSON.stringify(req.data));
-      console.log('req.params', JSON.stringify(req.params));
+      LOG.debug('Create Backup Action');
+      LOG.debug('req.data', JSON.stringify(req.data));
+      LOG.debug('req.params', JSON.stringify(req.params));
 
       const hdiContainer = await SELECT.one.from(req.subject, hdiContainer => {
         hdiContainer('*'),
@@ -235,9 +237,9 @@ class CatalogService extends cds.ApplicationService {
      * Note that all Data and Artifacts are overwritten in the target container!
      */
     this.on('restoreBackup', async (req) => {
-      console.log('Restore Backup Action');
-      console.log('req.data', JSON.stringify(req.data));
-      console.log('req.params', JSON.stringify(req.params));
+      LOG.debug('Restore Backup Action');
+      LOG.debug('req.data', JSON.stringify(req.data));
+      LOG.debug('req.params', JSON.stringify(req.params));
 
       return _restoreBackup(req);
     });
@@ -247,19 +249,19 @@ class CatalogService extends cds.ApplicationService {
      * Note that all Data and Artifacts are overwritten in the target container!
      */
     this.on('restoreBackupToOtherHDIContainer', async (req) => {
-      console.log('Restore Backup Action');
-      console.log('req.data', JSON.stringify(req.data));
-      console.log('req.params', JSON.stringify(req.params));
+      LOG.debug('Restore Backup Action');
+      LOG.debug('req.data', JSON.stringify(req.data));
+      LOG.debug('req.params', JSON.stringify(req.params));
 
       const { containerId, description } = req.data;
-      console.log(`Restore to target HDI Container ID ${containerId} (${description})`);
+      LOG.debug(`Restore to target HDI Container ID ${containerId} (${description})`);
 
       const backup = await SELECT.one.from(req.subject, backup => {
         backup('*'),
           backup.hdiContainer('*')
       });
 
-      console.log(`Restore Backup`, JSON.stringify(backup));
+      LOG.debug(`Restore Backup`, JSON.stringify(backup));
 
       return _restoreBackup(req, containerId);
     });
@@ -269,10 +271,10 @@ class CatalogService extends cds.ApplicationService {
      * Note that in CAP the draft can be cancelled, but the files on S3 are deleted anyways.
      */
     this.on('DELETE', Backups.drafts, async (req, next) => {
-      console.log("On DELETE Backups");
+      LOG.debug("On DELETE Backups");
 
       const backup = await SELECT.one.from(req.subject);
-      console.log('Backup to Delete', backup);
+      LOG.debug('Backup to Delete', backup);
 
       const { Contents } = await s3.send(new ListObjectsV2Command({ Bucket: s3Credentials.bucket, Prefix: backup.path }));
 
@@ -291,7 +293,7 @@ class CatalogService extends cds.ApplicationService {
 
       await Promise.all(deletePromises);
 
-      console.log('All objects in the folder deleted successfully');
+      LOG.debug('All objects in the folder deleted successfully');
       return next(); // call default event handler
     });
 

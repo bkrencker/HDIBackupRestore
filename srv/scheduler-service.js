@@ -6,6 +6,8 @@ const { HDIContainers } = cds.entities('my');
 const CatalogService = require('./cat-service');
 const { request } = require('express');
 
+const LOG = cds.log('cds');
+
 async function _createBackupsInParallel(hdiContainers, req) {
   const backupPromises = hdiContainers.map(hdiContainer =>
     CatalogService._createBackup(hdiContainer, req, true)
@@ -22,11 +24,11 @@ class SchedulerService extends cds.ApplicationService {
      * Test with GET http://localhost:4004/odata/v4/scheduler/createBackups(apiKey=1234567890)
      */
     this.on('createBackups', async (req) => {
-      console.log('Create Backup by Scheduler Function');
-      console.log('req.data', JSON.stringify(req.data));
-      console.log('req.params', JSON.stringify(req.params));
+      LOG.debug('Create Backup by Scheduler Function');
+      LOG.debug('req.data', JSON.stringify(req.data));
+      LOG.debug('req.params', JSON.stringify(req.params));
 
-      console.log('Request headers', req.headers);
+      LOG.debug('Request headers', req.headers);
 
       /**
        * Store scheduler data in order to send asynchronous reponse later when background job (backups) has finished
@@ -48,14 +50,14 @@ class SchedulerService extends cds.ApplicationService {
       }).where({ scheduled: true });
 
       await CatalogService._checkS3Bucket();
-      console.log('S3 Bucket is available');
+      LOG.debug('S3 Bucket is available');
 
       /**
        * BTP Scheduler Timeout after 15 seconds.. Therefore process request in background and send an async response to the BTP Scheduler.
        * See https://community.sap.com/t5/technology-blogs-by-sap/using-job-scheduler-in-sap-cloud-platform-5-long-running-async-jobs/ba-p/13451049
        */
       cds.spawn(async () => {
-        console.log("CDS Spawn");
+        LOG.debug("CDS Spawn");
 
         // Get access token for BTP Scheduler instance
         const response = await axios.get(`${btpSchedulerCredentials.uaa.url}/oauth/token?grant_type=client_credentials&response_type=token`, {
@@ -77,7 +79,7 @@ class SchedulerService extends cds.ApplicationService {
 
         _createBackupsInParallel(hdiContainers, req)
           .then(() => {
-            console.log('All backups created successfully');
+            LOG.debug('All backups created successfully');
             // Async response to scheduler instance
             axios.put(schedulerUrl, JSON.stringify({success: true, message: `Backups created for ${JSON.stringify(hdiContainers)}`}), axiosConfig);
           })
@@ -102,19 +104,19 @@ class SchedulerService extends cds.ApplicationService {
      * Note that all Data and Artifacts are overwritten in the target container!
      */
     this.on('restoreBackupToOtherHDIContainer', async (req) => {
-      console.log('Restore Backup Action');
-      console.log('req.data', JSON.stringify(req.data));
-      console.log('req.params', JSON.stringify(req.params));
+      LOG.debug('Restore Backup Action');
+      LOG.debug('req.data', JSON.stringify(req.data));
+      LOG.debug('req.params', JSON.stringify(req.params));
 
       const { containerId, description } = req.data;
-      console.log(`Restore to target HDI Container ID ${containerId} (${description})`);
+      LOG.debug(`Restore to target HDI Container ID ${containerId} (${description})`);
 
       const backup = await SELECT.one.from(req.subject, backup => {
         backup('*'),
           backup.hdiContainer('*')
       });
 
-      console.log(`Restore Backup`, JSON.stringify(backup));
+      LOG.debug(`Restore Backup`, JSON.stringify(backup));
 
       return _restoreBackup(req, containerId);
     });
