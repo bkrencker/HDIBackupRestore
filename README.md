@@ -1,6 +1,6 @@
 # BTP Toolbox: HDI Container Backup & Restore (Export / Import)
 
-This is the first application I publish for creating a Toolbox that helps running & operating `Cloud (CAP) Apps` on SAP BTP.
+This is the first application for a Toolbox that helps running & operating `Cloud (CAP) Apps` on SAP BTP.
 
 ## App Motivation
 
@@ -10,9 +10,9 @@ We checked the possibilities for Data Restore on BTP Hana DB via OSS-Ticket and 
 
 Therefore we looked for other options and since we can Export / Import HDI Containers manually from the Hana Database Explorer, we aimed to automate this process.
 
-That's why I developed a CAP Application, which can `Export (Backup) and Import (Restore) HDI Containers` through a Fiori Elements UI. The Backups are stored on AWS S3 ObjectStorage (from a BTP Service). 
+That's why I developed a CAP Application, which can `Export (Backup) and Import (Restore) HDI Containers` through a Fiori Elements UI. The Backups are stored on AWS S3 ObjectStorage (from a BTP Service), which gives us full control over the backups.
 
-It is also possible to completely automate the creation of the Backups through Cloud Scheduling Service on BTP.
+It is also possible to completely `automate the creation of the Backups through Cloud Scheduling Service` on BTP. For example creating nightly backups of all productive HDI Containers.
 
 And as `one more thing` this App can also be used for `HDI environment copy (data from PROD to QAS / DEV)` because you can choose to which target HDI Container you wand to restore a backup.
 
