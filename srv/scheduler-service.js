@@ -99,28 +99,6 @@ class SchedulerService extends cds.ApplicationService {
       res.status(202).send('Accepted async job, but long-running operation still running.');
     });
 
-    /**
-     * Restore (Import) an existing Backup from S3 store into another HDI Container.
-     * Note that all Data and Artifacts are overwritten in the target container!
-     */
-    this.on('restoreBackupToOtherHDIContainer', async (req) => {
-      LOG.debug('Restore Backup Action');
-      LOG.debug('req.data', JSON.stringify(req.data));
-      LOG.debug('req.params', JSON.stringify(req.params));
-
-      const { containerId, description } = req.data;
-      LOG.debug(`Restore to target HDI Container ID ${containerId} (${description})`);
-
-      const backup = await SELECT.one.from(req.subject, backup => {
-        backup('*'),
-          backup.hdiContainer('*')
-      });
-
-      LOG.debug(`Restore Backup`, JSON.stringify(backup));
-
-      return _restoreBackup(req, containerId);
-    });
-
 
     return super.init();
   }
