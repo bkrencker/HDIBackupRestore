@@ -19,7 +19,7 @@ modules:
       readiness-health-check-type: http
       readiness-health-check-http-endpoint: /health
       disk-quota: 1024M
-      memory: 80M
+      memory: 120M
     properties:
       # User-Provided Variables: not set by MTA because it will be overwritte (cleared) on each deployment
       #cds_requires_hanadb_credentials_host: <Connection URL from Hana DB>
