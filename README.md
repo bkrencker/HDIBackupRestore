@@ -80,6 +80,15 @@ For example:
 OpenSSL> s_client -host hcp-xxxyyzzzzzzz.s3-eu-central-1.amazonaws.com -port 443 -prexit -showcerts
 ```
 
+You will then receive a Certificat Chain containing multiple certificates. Use the very first certificate from the output which looks like this:
+
+```
+Certificate chain
+ 0 s:/CN=*.s3.eu-central-1.amazonaws.com
+   i:/C=US/O=Amazon/CN=Amazon RSA 2048 M01
+-----BEGIN CERTIFICATE-----
+```
+
 ### Hana DB: Create a HDI Admin User
 
 If not yet existing, create a User which has HDI Administration Privileges. A good starting point is following Blog:
