@@ -270,7 +270,7 @@ class CatalogService extends cds.ApplicationService {
      * This Event Handler is called when the DRAFT is deleted! At this point, delete the backup files on S3 storage.
      * Note that in CAP the draft can be cancelled, but the files on S3 are deleted anyways.
      */
-    this.on('DELETE', Backups.drafts, async (req, next) => {
+    this.on('DELETE', 'Backups.drafts', async (req, next) => {
       LOG.debug("On DELETE Backups");
 
       const backup = await SELECT.one.from(req.subject);

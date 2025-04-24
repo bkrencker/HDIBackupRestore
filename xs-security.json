@@ -1,5 +1,5 @@
 {
-  "xsappname": "HDI-Backup",
+  "xsappname": "hdibackupauth",
   "tenant-mode": "dedicated",
   "scopes": [
     {

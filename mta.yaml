@@ -88,9 +88,9 @@ resources:
       service: xsuaa
       service-plan: application
       path: ./xs-security.json
-      config:
-        xsappname: HDI-Backup-${org}-${space}
-        tenant-mode: dedicated
+      # config:
+      #   xsappname: HDI-Backup-${org}-${space}
+      #   tenant-mode: dedicated
 
   - name: scheduler
     type: org.cloudfoundry.managed-service
@@ -99,4 +99,4 @@ resources:
       service-plan: standard  # minimum schedule frequency of 5 minutes.
       service-name: jobscheduler
       config:
-          enable-xsuaa-support: true
+        enable-xsuaa-support: true
