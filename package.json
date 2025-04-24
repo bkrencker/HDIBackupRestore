@@ -6,19 +6,19 @@
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.574.0",
-    "@sap/cds": "^7",
-    "@sap/cds-hana": "^2",
-    "@sap/hana-client": "^2.20.20",
-    "@sap/xssec": "^3",
-    "axios": "^1.7.2",
+    "@aws-sdk/client-s3": "^3",
+    "@cap-js/hana": "^1.9.0",
+    "@sap/cds": "^8",
+    "@sap/hana-client": "^2.24.24",
+    "@sap/xssec": "^4",
+    "axios": "^1.8.4",
     "express": "^4"
   },
   "devDependencies": {
     "@cap-js/sqlite": "^1",
-    "@sap/cds-dk": "^7",
+    "@sap/cds-dk": "^8",
     "@sap/eslint-plugin-cds": "^3",
-    "@sap/ux-specification": "^1.120.9",
+    "@sap/ux-specification": "UI5-1.120",
     "eslint": "^9"
   },
   "scripts": {
@@ -26,11 +26,16 @@
     "watch": "cds watch --profile hybrid",
     "watch-debug": "set DEBUG=custom & cds watch --profile hybrid",
     "watch-chrome": "start chrome http://localhost:4004/backup/webapp/index.html?sap-ui-xx-viewCache=false && cds watch --profile hybrid",
-    "bindObjectstore": "cds bind --to objectstore",
-    "build": "mbt build -p=cf",
-    "deploy": "cf deploy mta_archives\\HDI-Backup_1.0.0.mtar",
-    "buildDeployCloud": "npm run build && npm run deploy"
+    "bindObjectstore": "cds bind --to objectstore:shared",
+    "bindHANA": "cds bind --to HDI-Backup-db",
+    "build": "mbt build --mtar archive",
+    "deploy": "cf deploy mta_archives/archive.mtar --retries 1",
+    "bad": "npm run build && npm run deploy",
+    "undeploy": "cf undeploy HDI-Backup --delete-services --delete-service-keys --delete-service-brokers"
   },
+  "workspaces": [
+    "./app/*"
+  ],
   "sapux": [
     "app/backup"
   ],
