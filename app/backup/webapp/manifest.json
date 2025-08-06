@@ -42,10 +42,13 @@
       "phone": true
     }
   },
+  "sap.platform.cf": {
+    "ui5VersionNumber": "1.120.x"
+  },
   "sap.ui5": {
     "flexEnabled": false,
     "dependencies": {
-      "minUI5Version": "1.123.2",
+      "minUI5Version": "1.136.1",
       "libs": {
         "sap.m": {},
         "sap.ui.core": {},
