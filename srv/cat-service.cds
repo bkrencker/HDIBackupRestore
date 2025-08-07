@@ -77,8 +77,8 @@ service CatalogService {
             },
           }
       ) containerId : String @title: 'HDI Container GUID',
-      @readonly description: String @title: 'HDI Container Description',
-      @readonly application: String @title: 'Application Name'
+      @readonly description: String @title: 'Target HDI Container',
+      @readonly application: String @title: 'Target Application'
     );
 
     @(
