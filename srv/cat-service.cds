@@ -59,11 +59,17 @@ service CatalogService {
                         LocalDataProperty : description,
                         ValueListProperty : 'description',
                     },
+                    {
+                        $Type : 'Common.ValueListParameterOut',
+                        LocalDataProperty : application,
+                        ValueListProperty : 'application/name' 
+                    },
                 ],
             },
           }
       ) containerId : String @title: 'HDI Container GUID',
-      @readonly description: String @title: 'HDI Container Description'
+      @readonly description: String @title: 'HDI Container Description',
+      @readonly application: String @title: 'Application Name'
     );
 
     @(
