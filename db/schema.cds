@@ -9,7 +9,7 @@ entity Applications: cuid, managed {
 
 @cds.odata.valuelist
 entity HDIContainers: managed {
-  key containerId  : String @assert.format : '[0-9A-Z]{32}' @title: 'HDI Container GUID (32 Characters)';
+  key containerId  : String @mandatory @title: 'HDI Container GUID (32 Characters or own schema name)';
       description  : String @mandatory;
       scheduled    : Boolean default false @title : 'Scheduled Backups?';
 
