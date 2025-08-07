@@ -55,6 +55,15 @@ service CatalogService {
                         ValueListProperty : 'containerId',
                     },
                     {
+                        $Type : 'Common.ValueListParameterFilterOnly',
+                        ValueListProperty : 'application_ID',
+                    },
+                    {
+                        $Type : 'Common.ValueListParameterIn',
+                        LocalDataProperty : in.hdiContainer.application_ID,
+                        ValueListProperty : 'application_ID',
+                    },
+                    {
                         $Type : 'Common.ValueListParameterOut',
                         LocalDataProperty : description,
                         ValueListProperty : 'description',
