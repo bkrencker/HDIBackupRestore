@@ -138,7 +138,12 @@ cds.requires.hanadb.credentials.host=<Hana DB Connection String>
 cds.requires.hanadb.credentials.user=<Hana DB Username>
 cds.requires.hanadb.credentials.pw=<Hana DB Password>
 ```
-
+On the deployed application on BTP replace the dot with underscore and add the following variables to the srv-Application:
+```
+cds_requires_hanadb_credentials_host
+cds_requires_hanadb_credentials_user
+cds_requires_hanadb_credentials_pw
+```
 ## Automate Backup Creation using BTP Job Scheduler
 
 The `mta.yaml` file of this project will already create a BTP Scheduler instance.
