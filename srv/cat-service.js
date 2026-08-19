@@ -52,9 +52,10 @@ async function _checkS3Bucket() {
  * @param {CatalogService.HDIContainers} hdiContainer HDIContainer Entity with expanded Applications
  * @param {cds.Request} req CAP CDS Request Object (used for returning error messages)
  * @param {Boolean} bScheduled TRUE if run by scheduler (Default FALSE)
- * @returns 
+ * @param {String} backupId ID of the Backup entry, can be passed in to know the ID before the backup has finished
+ * @returns {String} ID of the created Backup entry
  */
-async function _createBackup(hdiContainer, req, bScheduled = false) {
+async function _createBackup(hdiContainer, req, bScheduled = false, backupId = uuid()) {
 
   LOG.debug(`Create Backup for HDI Container`, JSON.stringify(hdiContainer));
 
@@ -127,7 +128,7 @@ async function _createBackup(hdiContainer, req, bScheduled = false) {
   LOG.debug(`Size of Backup is ${folderSizeInMB.toFixed(2)} MB`);
 
   let newBackupEntry = {
-    ID: uuid(),
+    ID: backupId,
     created: createdTimestamp,
     hdiContainer_containerId: hdiContainer.containerId,
     path: awsS3FolderPath,
@@ -142,6 +143,8 @@ async function _createBackup(hdiContainer, req, bScheduled = false) {
   LOG.debug('Insert new Backup result', insertResult);
 
   conn.disconnect();
+
+  return backupId;
 }
 
 class CatalogService extends cds.ApplicationService {

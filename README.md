@@ -158,6 +158,101 @@ Make sure to activate the checkbox on the HDI Container. Only flagged HDI Contai
 
 ![](README/scheduled_flag.PNG)
 
+## Trigger Backups from External Systems (REST API)
+
+A single HDI Container can be backed up from an external system through a public REST API. This API is not protected by XSUAA, it is secured by an API key instead.
+
+### Setup
+
+Generate a random API key, for example:
+```
+openssl rand -base64 32
+```
+
+The API key is read from the `BACKUP_API_KEY` environment variable. Set it as User-Provided Variable on the srv-Application, because variables set by the MTA are cleared on each deployment:
+```
+cf set-env HDI-Backup-srv BACKUP_API_KEY <Generated API Key>
+cf restage HDI-Backup-srv
+```
+
+When running locally, add the same variable to your `.env` file:
+```
+BACKUP_API_KEY=<Generated API Key>
+```
+
+*If `BACKUP_API_KEY` is not set, the API rejects every request with HTTP 503. This way the endpoint is never reachable without a key.*
+
+### Minimum Backup Interval
+
+Two backups of the same HDI Container have to be at least 5 minutes apart. Set the `MIN_BACKUP_INTERVAL_MINUTES` environment variable to change this:
+```
+cf set-env HDI-Backup-srv MIN_BACKUP_INTERVAL_MINUTES 15
+cf restage HDI-Backup-srv
+```
+
+### Endpoint URL
+
+The API is served by the srv-Application directly, not through the AppRouter. Get its URL with:
+```
+cf app HDI-Backup-srv
+```
+
+### Create a Backup
+
+```
+curl -i -X POST https://<srv-app-url>/api/v1/createBackup \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: <Generated API Key>" \
+  -d '{"containerId": "<HDI Container GUID>"}'
+```
+
+A backup takes longer than the usual HTTP timeouts, so it is processed in the background. The call returns immediately:
+```
+HTTP/1.1 202 Accepted
+
+{
+  "backupId": "a1b2c3d4-...",
+  "message": "Backup started, poll backupStatus with the returned backupId"
+}
+```
+
+### Check the Backup Status
+
+```
+curl "https://<srv-app-url>/api/v1/backupStatus?backupId=<backupId>" \
+  -H "x-api-key: <Generated API Key>"
+```
+
+As long as the export is running, the entry does not exist yet:
+```
+{ "backupId": "a1b2c3d4-...", "status": "pending" }
+```
+
+Once the export has finished, the backup details are returned:
+```
+{
+  "backupId": "a1b2c3d4-...",
+  "status": "completed",
+  "created": "2025-01-01T12:00:00.000Z",
+  "path": "MyApp/<HDI Container GUID>/2025-01-01T12:00:00.000Z",
+  "numberOfFiles": 42,
+  "sizeInMB": 128
+}
+```
+
+*Note that a failed backup is not distinguishable from a running one, both are reported as `pending`. Check the application log for details.*
+
+### Response Codes
+
+Status | Meaning
+---------|----------
+`202` | Backup was started, poll `backupStatus` with the returned `backupId`
+`400` | `containerId` is missing
+`401` | `x-api-key` header is missing or invalid
+`404` | No HDI Container exists for the given `containerId`
+`429` | A backup for this HDI Container is still running, or the last one was created less than `MIN_BACKUP_INTERVAL_MINUTES` ago
+`503` | `BACKUP_API_KEY` is not configured on the application
+
 ## Tips and Tricks
 
 ### Access S3 Storage using WinSCP

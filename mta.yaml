@@ -25,6 +25,8 @@ modules:
       #cds_requires_hanadb_credentials_host: <Connection URL from Hana DB>
       #cds_requires_hanadb_credentials_user: <Backup User's Username>
       #cds_requires_hanadb_credentials_pw: <Backup User's Password>
+      #BACKUP_API_KEY: <Secret API Key for the external REST API>
+      #MIN_BACKUP_INTERVAL_MINUTES: <Minimum minutes between two backups of the same HDI Container, default 5>
     build-parameters:
       builder: npm
       ignore:

@@ -4,7 +4,6 @@ const axios = require('axios');
 const { HDIContainers } = cds.entities('my');
 
 const CatalogService = require('./cat-service');
-const { request } = require('express');
 
 const LOG = cds.log('cds');
 
@@ -21,7 +20,7 @@ class SchedulerService extends cds.ApplicationService {
   init() {
 
     /**
-     * Test with GET http://localhost:4004/odata/v4/scheduler/createBackups(apiKey=1234567890)
+     * Test with GET http://localhost:4004/odata/v4/scheduler/createBackups()
      */
     this.on('createBackups', async (req) => {
       LOG.debug('Create Backup by Scheduler Function');
